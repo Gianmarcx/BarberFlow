@@ -32,7 +32,7 @@ public class ServiceService {
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
         ServiceEntity service = serviceMapper.toEntity(dto);
-        service.setBarber(owner);
+        service.setOwner(owner);                        // ✅ era setBarber()
 
         return serviceMapper.toDTO(serviceRepository.save(service));
     }
@@ -42,7 +42,7 @@ public class ServiceService {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        return serviceRepository.findByBarber(owner)
+        return serviceRepository.findByOwner(owner)     // ✅ era findByBarber()
                 .stream()
                 .map(serviceMapper::toDTO)
                 .collect(Collectors.toList());
@@ -56,11 +56,12 @@ public class ServiceService {
         ServiceEntity service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
 
-        if (!service.getBarber().getEmail().equals(owner.getEmail())) {
+        if (!service.getOwner().getEmail().equals(owner.getEmail())) {  // ✅ era getBarber()
             throw new IllegalStateException("Non autorizzato");
         }
 
         service.setName(dto.getName());
+        service.setDescription(dto.getDescription());   // ✅ aggiunto
         service.setDuration(dto.getDuration());
         service.setPrice(dto.getPrice());
 
@@ -75,7 +76,7 @@ public class ServiceService {
         ServiceEntity service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
 
-        if (!service.getBarber().getEmail().equals(owner.getEmail())) {
+        if (!service.getOwner().getEmail().equals(owner.getEmail())) {  // ✅ era getBarber()
             throw new IllegalStateException("Non autorizzato");
         }
 

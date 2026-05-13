@@ -11,6 +11,7 @@ public class ServiceMapper {
         return new ServiceDTO(
                 s.getId(),
                 s.getName(),
+                s.getDescription(),   // ✅ aggiunto
                 s.getDuration(),
                 s.getPrice()
         );
@@ -20,6 +21,7 @@ public class ServiceMapper {
         return ServiceEntity.builder()
                 .id(dto.getId())
                 .name(dto.getName())
+                .description(dto.getDescription())  // ✅ aggiunto
                 .duration(dto.getDuration())
                 .price(dto.getPrice())
                 .build();

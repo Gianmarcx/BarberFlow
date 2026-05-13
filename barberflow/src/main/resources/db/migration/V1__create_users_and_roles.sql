@@ -24,7 +24,7 @@ CREATE TABLE customers (
 CREATE TABLE schedules (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   barber_id BIGINT NOT NULL,
-  day_of_week VARCHAR(20) NOT NULL,
+  day_of_week VARCHAR(10) NOT NULL,         -- ✅ 0=LUN, 1=MAR, ..., 6=DOM
   open_time TIME NOT NULL,
   close_time TIME NOT NULL,
   CONSTRAINT fk_schedules_barber FOREIGN KEY (barber_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -36,7 +36,7 @@ CREATE TABLE services (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   duration INT NOT NULL,
-  price DOUBLE NOT NULL,
+  price DECIMAL(10,2) NOT NULL,         -- ✅ era DOUBLE, sbagliato per valori monetari
   owner_id BIGINT NOT NULL,
   CONSTRAINT fk_services_owner FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -48,16 +48,22 @@ CREATE TABLE bookings (
   service_id BIGINT NOT NULL,
   start_time DATETIME NOT NULL,
   end_time DATETIME NOT NULL,
-  service_name VARCHAR(255),
-  price DOUBLE,
+  status VARCHAR(50) NOT NULL DEFAULT 'PENDING', -- ✅ aggiunto: PENDING, CONFIRMED, CANCELLED, COMPLETED
+  price_snapshot DECIMAL(10,2),                  -- ✅ rinominato: prezzo storicizzato al momento della prenotazione
   notes TEXT,
   CONSTRAINT fk_bookings_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
   CONSTRAINT fk_bookings_barber FOREIGN KEY (barber_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_bookings_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
 );
 
+-- ✅ subscription_status corretta e collegata a users
 CREATE TABLE subscription_status (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL UNIQUE,              -- ✅ ogni utente ha una subscription
   subscription_type VARCHAR(100) NOT NULL,
-  description TEXT
+  description TEXT,
+  start_date DATE NOT NULL,                    -- ✅ quando inizia
+  end_date DATE,                               -- ✅ quando scade (null = illimitata)
+  active BOOLEAN NOT NULL DEFAULT TRUE,        -- ✅ è attiva?
+  CONSTRAINT fk_subscription_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

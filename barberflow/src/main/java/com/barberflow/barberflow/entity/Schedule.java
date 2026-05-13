@@ -7,7 +7,8 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "schedules")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,23 +20,17 @@ public class Schedule {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DayOfWeek dayOfWeek; // LUNEDI, MARTEDI, ...
+    private DayOfWeek dayOfWeek;        // salva "MONDAY", "TUESDAY", ecc.
 
     @Column(nullable = false)
-    private LocalTime openTime; // ora di apertura
+    private LocalTime openTime;
 
     @Column(nullable = false)
-    private LocalTime closeTime; // ora di chiusura
+    private LocalTime closeTime;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "barber_id", nullable = false)  // ✅ era "user_id", corretto in "barber_id"
     private User barber;
 
-    public User getBarber() {
-        return barber;
-    }
-
-    public void setBarber(User barber) {
-        this.barber = barber;
-    }
+    // ✅ Rimossi getter e setter manuali
 }

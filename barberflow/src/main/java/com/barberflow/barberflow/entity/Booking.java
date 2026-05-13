@@ -1,13 +1,16 @@
 package com.barberflow.barberflow.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
-@Data
+@Getter
+@Setter
 public class Booking {
 
     @Id
@@ -24,13 +27,19 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
-    private ServiceEntity service;   // 🔥 relazione corretta
+    private ServiceEntity service;
 
     @Column(nullable = false)
     private LocalDateTime startTime;
 
     @Column(nullable = false)
-    private LocalDateTime endTime;   // 🔥 calcolato dal backend
+    private LocalDateTime endTime;
+
+    @Column(nullable = false)
+    private String status = "PENDING";      // ✅ aggiunto: PENDING, CONFIRMED, CANCELLED, COMPLETED
+
+    @Column(name = "price_snapshot")
+    private BigDecimal priceSnapshot;       // ✅ aggiunto: prezzo al momento della prenotazione
 
     @Column
     private String notes;

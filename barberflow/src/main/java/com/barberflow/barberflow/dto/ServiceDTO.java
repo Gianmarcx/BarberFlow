@@ -1,50 +1,34 @@
 package com.barberflow.barberflow.dto;
 
-public class ServiceDTO{
+import java.math.BigDecimal;
 
-     private Long id;
-     private String name;
-     private int duration;
-     private double price;
+public class ServiceDTO {
 
-     public ServiceDTO() {}
+    private Long id;
+    private String name;
+    private String description;       // ✅ aggiunto
+    private int duration;
+    private BigDecimal price;         // ✅ era double, corretto in BigDecimal
 
-     public ServiceDTO(Long id, String name, int duration, double price) {
-         this.id = id;
-         this.name = name;
-         this.duration = duration;
-         this.price = price;
-     }
+    public ServiceDTO() {}
 
-     public Long getId() {
-         return id;
-     }
+    public ServiceDTO(Long id, String name, String description, int duration, BigDecimal price) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.duration = duration;
+        this.price = price;
+    }
 
-     public void setId(Long id) {
-         this.id = id;
-     }
+    public Long getId() { return id; }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public int getDuration() { return duration; }
+    public BigDecimal getPrice() { return price; }
 
-     public String getName() {
-         return name;
-     }
-
-     public void setName(String name) {
-         this.name = name;
-     }
-
-     public int getDuration() {
-         return duration;
-     }
-
-     public void setDuration(int duration) {
-         this.duration = duration;
-     }
-
-     public double getPrice() {
-         return price;
-     }
-
-     public void setPrice(double price) {
-         this.price = price;
-     }
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setDuration(int duration) { this.duration = duration; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 }

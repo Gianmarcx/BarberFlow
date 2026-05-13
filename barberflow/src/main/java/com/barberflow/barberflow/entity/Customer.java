@@ -5,7 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "customers")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,13 +29,7 @@ public class Customer {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User owner; // il barbiere a cui appartiene il cliente
+    private User owner;  // il barbiere a cui appartiene il cliente
 
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
+    // ✅ Rimossi getter e setter manuali — li genera già @Getter/@Setter
 }
