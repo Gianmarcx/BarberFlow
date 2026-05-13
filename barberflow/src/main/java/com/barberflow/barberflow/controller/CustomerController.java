@@ -1,9 +1,9 @@
 package com.barberflow.barberflow.controller;
 
-import com.barberflow.barberflow.entity.Customer;
-import com.barberflow.barberflow.entity.User;
+import com.barberflow.barberflow.dto.CustomerDTO;
 import com.barberflow.barberflow.service.CustomerService;
-import com.barberflow.barberflow.service.UserService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,29 +13,31 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
-    private final UserService userService;
 
-    public CustomerController(CustomerService customerService,
-                              UserService userService) {
+    public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
-        this.userService = userService;
     }
 
-    @PostMapping("/{userEmail}")
-    public Customer createCustomer(@PathVariable String userEmail,
-                                   @RequestBody Customer customer) {
-        User owner = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        customer.setOwner(owner);
-        return customerService.save(customer);
+    @PostMapping
+    public ResponseEntity<CustomerDTO> create(@RequestBody CustomerDTO dto, Authentication auth) {
+        return ResponseEntity.ok(customerService.createCustomer(dto, auth.getName()));
     }
 
-    @GetMapping("/{userEmail}")
-    public List<Customer> getCustomers(@PathVariable String userEmail) {
-        User owner = userService.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    @GetMapping
+    public ResponseEntity<List<CustomerDTO>> getAll(Authentication auth) {
+        return ResponseEntity.ok(customerService.getCustomers(auth.getName()));
+    }
 
-        return customerService.findByOwner(owner);
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerDTO> update(@PathVariable Long id,
+                                              @RequestBody CustomerDTO dto,
+                                              Authentication auth) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, dto, auth.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
+        customerService.deleteCustomer(id, auth.getName());
+        return ResponseEntity.noContent().build();
     }
 }

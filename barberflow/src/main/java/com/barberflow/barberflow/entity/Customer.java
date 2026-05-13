@@ -18,6 +18,10 @@ public class Customer {
     @Column(nullable = false)
     private String name;
 
+    private String surname;
+
+    private String email;
+
     private String phone;
 
     private String notes;

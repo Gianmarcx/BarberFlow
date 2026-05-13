@@ -22,10 +22,10 @@ public class Schedule {
     private DayOfWeek dayOfWeek; // LUNEDI, MARTEDI, ...
 
     @Column(nullable = false)
-    private LocalTime startTime; // ora di apertura
+    private LocalTime openTime; // ora di apertura
 
     @Column(nullable = false)
-    private LocalTime endTime; // ora di chiusura
+    private LocalTime closeTime; // ora di chiusura
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
