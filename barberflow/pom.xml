@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>  <!-- ✅ aggiunto -->
+            <artifactId>flyway-mysql</artifactId>  <!-- ✅ aggiunto -->
         </dependency>
 
         <!-- JWT — ✅ aggiornato a 0.12.6 -->
