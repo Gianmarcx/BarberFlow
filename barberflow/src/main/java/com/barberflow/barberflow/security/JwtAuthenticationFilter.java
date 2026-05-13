@@ -32,14 +32,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Ignora endpoint pubblici
         String path = request.getServletPath();
+        final String authHeader = request.getHeader("Authorization");
+
+        // LOG TEMPORANEI
+        System.out.println(">>> PATH: " + path);
+        System.out.println(">>> AUTH HEADER: " + authHeader);
+
         if (path.startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -47,35 +50,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7);
+        System.out.println(">>> JWT PRIMI 20 CHAR: " + jwt.substring(0, 20));
 
         try {
-            final String userEmail = jwtService.extractEmail(jwt); // ✅ extractEmail, non extractUsername
+            final String userEmail = jwtService.extractEmail(jwt);
+            System.out.println(">>> EMAIL ESTRATTA: " + userEmail);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                System.out.println(">>> USER TROVATO: " + userDetails.getUsername());
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
+                    System.out.println(">>> TOKEN VALIDO");
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
                                     userDetails.getAuthorities()
                             );
-
                     authToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
-
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println(">>> TOKEN NON VALIDO");
                 }
             }
 
         } catch (Exception e) {
-            // ✅ Token malformato, scaduto o manomesso → 401 pulito, niente 500
+            System.out.println(">>> ECCEZIONE: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Token non valido o scaduto\"}");
-            return; // ✅ blocca la chain, non proseguire
+            return;
         }
 
         filterChain.doFilter(request, response);
