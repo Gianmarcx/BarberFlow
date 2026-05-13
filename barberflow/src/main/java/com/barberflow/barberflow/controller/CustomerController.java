@@ -2,6 +2,7 @@ package com.barberflow.barberflow.controller;
 
 import com.barberflow.barberflow.dto.CustomerDTO;
 import com.barberflow.barberflow.service.CustomerService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,12 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerDTO> create(@RequestBody CustomerDTO dto, @RequestParam String ownerEmail) {
-        return ResponseEntity.ok(customerService.createCustomer(dto, ownerEmail));
+    public ResponseEntity<CustomerDTO> create(
+            @RequestBody CustomerDTO dto,
+            Authentication auth) {          
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(customerService.createCustomer(dto, auth.getName()));
     }
 
     @GetMapping
@@ -28,15 +33,25 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomers(auth.getName()));
     }
 
+    @GetMapping("/{id}")                    // ✅ aggiunto endpoint mancante
+    public ResponseEntity<CustomerDTO> getById(
+            @PathVariable Long id,
+            Authentication auth) {
+        return ResponseEntity.ok(customerService.findById(id, auth.getName()));
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDTO> update(@PathVariable Long id,
-                                              @RequestBody CustomerDTO dto,
-                                              Authentication auth) {
+    public ResponseEntity<CustomerDTO> update(
+            @PathVariable Long id,
+            @RequestBody CustomerDTO dto,
+            Authentication auth) {
         return ResponseEntity.ok(customerService.updateCustomer(id, dto, auth.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            Authentication auth) {
         customerService.deleteCustomer(id, auth.getName());
         return ResponseEntity.noContent().build();
     }

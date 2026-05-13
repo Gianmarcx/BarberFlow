@@ -33,8 +33,7 @@ public class CustomerService {
         Customer customer = customerMapper.toEntity(dto);
         customer.setOwner(owner);
 
-        Customer saved = customerRepository.save(customer);
-        return customerMapper.toDTO(saved);
+        return customerMapper.toDTO(customerRepository.save(customer));
     }
 
     public List<CustomerDTO> getCustomers(String ownerEmail) {
@@ -47,9 +46,16 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    public Customer findById(Long id) {
-        return customerRepository.findById(id)
+    // ✅ restituisce DTO invece dell'entità grezza
+    public CustomerDTO findById(Long id, String ownerEmail) {
+        Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Cliente non trovato"));
+
+        if (!customer.getOwner().getEmail().equals(ownerEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
+
+        return customerMapper.toDTO(customer);
     }
 
     public CustomerDTO updateCustomer(Long id, CustomerDTO dto, String ownerEmail) {

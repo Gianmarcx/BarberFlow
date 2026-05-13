@@ -1,12 +1,22 @@
 package com.barberflow.barberflow.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
-public class User {
+@Getter
+@Setter
+public class User implements UserDetails {   // ✅ implementa UserDetails
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +28,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // Esempio semplice di ruoli; puoi adattare a una relazione ManyToMany se serve
+    private String name;      // ✅ aggiunto
+
+    private String surname;   // ✅ aggiunto
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -31,31 +44,37 @@ public class User {
         this.password = password;
     }
 
-    public Long getId() {
-        return id;
+    // ✅ Metodi obbligatori di UserDetails
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toSet());
     }
 
-    public String getEmail() {
-        return email;
+    @Override
+    public String getUsername() {
+        return email;   // ✅ Spring Security usa email come username
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getPassword() {
-        return password;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

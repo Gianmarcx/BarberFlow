@@ -8,6 +8,7 @@ import com.barberflow.barberflow.repository.ScheduleRepository;
 import com.barberflow.barberflow.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +32,22 @@ public class ScheduleService {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        if (dto.getOpenTime().isAfter(dto.getCloseTime())) {
-            throw new IllegalStateException("L'orario di apertura non può essere dopo la chiusura");
+        // ✅ validazione orari migliorata
+        if (!dto.getOpenTime().isBefore(dto.getCloseTime())) {
+            throw new IllegalStateException("L'orario di apertura deve essere prima della chiusura");
         }
 
-        Schedule schedule = scheduleMapper.toEntity(dto);
-        schedule.setBarber(owner);
+        // ✅ se esiste già uno schedule per quel giorno, aggiorna invece di duplicare
+        Schedule schedule = scheduleRepository
+                .findByBarberAndDayOfWeek(owner, dto.getDayOfWeek())
+                .orElse(new Schedule());
 
-        Schedule saved = scheduleRepository.save(schedule);
-        return scheduleMapper.toDTO(saved);
+        schedule.setBarber(owner);
+        schedule.setDayOfWeek(dto.getDayOfWeek());
+        schedule.setOpenTime(dto.getOpenTime());
+        schedule.setCloseTime(dto.getCloseTime());
+
+        return scheduleMapper.toDTO(scheduleRepository.save(schedule));
     }
 
     public List<ScheduleDTO> getSchedules(String ownerEmail) {
@@ -50,5 +58,17 @@ public class ScheduleService {
                 .stream()
                 .map(scheduleMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    // ✅ aggiunto metodo mancante
+    public void deleteSchedule(DayOfWeek dayOfWeek, String ownerEmail) {
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+
+        Schedule schedule = scheduleRepository
+                .findByBarberAndDayOfWeek(owner, dayOfWeek)
+                .orElseThrow(() -> new IllegalStateException("Orario non trovato per questo giorno"));
+
+        scheduleRepository.delete(schedule);
     }
 }
