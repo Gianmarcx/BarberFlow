@@ -61,15 +61,15 @@ public class BookingService {
             throw new IllegalStateException("Non autorizzato");
         }
 
-        // 🔥 Recupero servizio
+        // Recupero servizio
         ServiceEntity service = serviceRepository.findById(dto.getServiceId())
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
 
-        // 🔥 Calcolo automatico dell'endTime
+        // Calcolo automatico dell'endTime
         LocalDateTime start = dto.getStartTime();
         LocalDateTime end = start.plusMinutes(service.getDuration());
 
-        // 🔥 Validazione orari
+        // Validazione orari
         DayOfWeek day = start.getDayOfWeek();
 
         Schedule schedule = scheduleRepository
@@ -84,7 +84,7 @@ public class BookingService {
             throw new IllegalStateException("Prenotazione fuori orario lavorativo");
         }
 
-        // 🔥 Controllo sovrapposizioni
+        // Controllo sovrapposizioni
         boolean overlaps = bookingRepository.existsOverlappingBooking(
                 owner,
                 start,
@@ -96,15 +96,13 @@ public class BookingService {
             throw new IllegalStateException("Esiste già una prenotazione in questo orario");
         }
 
-        // 🔥 Creazione booking
+        // Creazione booking
         Booking booking = new Booking();
         booking.setCustomer(customer);
         booking.setBarber(owner);
-        booking.setService(service);
+        booking.setService(service); // 🔥 CORRETTO
         booking.setStartTime(start);
         booking.setEndTime(end);
-        booking.setServiceName(service.getName());
-        booking.setPrice(service.getPrice());
         booking.setNotes(dto.getNotes());
 
         Booking saved = bookingRepository.save(booking);
@@ -139,15 +137,15 @@ public class BookingService {
             throw new IllegalStateException("Non autorizzato");
         }
 
-        // 🔥 Recupero servizio
+        // Recupero servizio
         ServiceEntity service = serviceRepository.findById(dto.getServiceId())
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
 
-        // 🔥 Calcolo automatico endTime
+        // Calcolo automatico endTime
         LocalDateTime start = dto.getStartTime();
         LocalDateTime end = start.plusMinutes(service.getDuration());
 
-        // 🔥 Validazione orari
+        // Validazione orari
         DayOfWeek day = start.getDayOfWeek();
 
         Schedule schedule = scheduleRepository
@@ -162,7 +160,7 @@ public class BookingService {
             throw new IllegalStateException("Prenotazione fuori orario lavorativo");
         }
 
-        // 🔥 Controllo sovrapposizioni (escludendo se stesso)
+        // Controllo sovrapposizioni (escludendo se stesso)
         boolean overlaps = bookingRepository.existsOverlappingBooking(
                 owner,
                 start,
@@ -174,12 +172,10 @@ public class BookingService {
             throw new IllegalStateException("Esiste già una prenotazione in questo orario");
         }
 
-        // 🔥 Aggiornamento booking
-        booking.setService(service);
+        // Aggiornamento booking
+        booking.setService(service); // 🔥 CORRETTO
         booking.setStartTime(start);
         booking.setEndTime(end);
-        booking.setServiceName(service.getName());
-        booking.setPrice(service.getPrice());
         booking.setNotes(dto.getNotes());
 
         Booking saved = bookingRepository.save(booking);
@@ -212,7 +208,7 @@ public class BookingService {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        // 🔥 Recupero servizio
+        // Recupero servizio
         ServiceEntity service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
 

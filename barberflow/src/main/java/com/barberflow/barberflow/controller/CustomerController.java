@@ -19,8 +19,8 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerDTO> create(@RequestBody CustomerDTO dto, Authentication auth) {
-        return ResponseEntity.ok(customerService.createCustomer(dto, auth.getName()));
+    public ResponseEntity<CustomerDTO> create(@RequestBody CustomerDTO dto, @RequestParam String ownerEmail) {
+        return ResponseEntity.ok(customerService.createCustomer(dto, ownerEmail));
     }
 
     @GetMapping
