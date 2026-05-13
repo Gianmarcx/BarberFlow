@@ -24,7 +24,7 @@
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>  <!-- ✅ era webmvc -->
+            <artifactId>spring-boot-starter-web</artifactId>  
         </dependency>
 
         <!-- JPA -->
@@ -67,10 +67,10 @@
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>  <!-- ✅ aggiunto -->
+            <artifactId>flyway-mysql</artifactId> 
         </dependency>
 
-        <!-- JWT — ✅ aggiornato a 0.12.6 -->
+        
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -104,7 +104,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Test — ✅ solo dipendenze che esistono realmente -->
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
