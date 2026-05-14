@@ -46,9 +46,6 @@ public class BookingService {
         this.serviceRepository = serviceRepository;
     }
 
-    // ---------------------------------------------------------
-    // CREATE BOOKING
-    // ---------------------------------------------------------
     public BookingDTO createBooking(BookingDTO dto, String ownerEmail) {
 
         User owner = userRepository.findByEmail(ownerEmail)
@@ -69,7 +66,6 @@ public class BookingService {
 
         validateSchedule(owner, start, end);
 
-        // ✅ usa il metodo senza excludeId per la creazione
         if (bookingRepository.existsOverlappingBooking(owner, start, end)) {
             throw new IllegalStateException("Esiste già una prenotazione in questo orario");
         }
@@ -81,15 +77,12 @@ public class BookingService {
         booking.setStartTime(start);
         booking.setEndTime(end);
         booking.setStatus("PENDING");
-        booking.setPriceSnapshot(service.getPrice());   // ✅ storicizza il prezzo
+        booking.setPriceSnapshot(service.getPrice());
         booking.setNotes(dto.getNotes());
 
         return bookingMapper.toDTO(bookingRepository.save(booking));
     }
 
-    // ---------------------------------------------------------
-    // GET ALL BOOKINGS
-    // ---------------------------------------------------------
     public List<BookingDTO> getBookings(String ownerEmail) {
 
         User owner = userRepository.findByEmail(ownerEmail)
@@ -101,9 +94,6 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------------
-    // UPDATE BOOKING
-    // ---------------------------------------------------------
     public BookingDTO updateBooking(Long id, BookingDTO dto, String ownerEmail) {
 
         User owner = userRepository.findByEmail(ownerEmail)
@@ -124,7 +114,6 @@ public class BookingService {
 
         validateSchedule(owner, start, end);
 
-        // ✅ usa il metodo con excludeId per l'aggiornamento
         if (bookingRepository.existsOverlappingBookingExcluding(owner, start, end, id)) {
             throw new IllegalStateException("Esiste già una prenotazione in questo orario");
         }
@@ -132,19 +121,16 @@ public class BookingService {
         booking.setService(service);
         booking.setStartTime(start);
         booking.setEndTime(end);
-        booking.setPriceSnapshot(service.getPrice());   // ✅ aggiorna il prezzo snapshot
+        booking.setPriceSnapshot(service.getPrice());
         booking.setNotes(dto.getNotes());
 
         if (dto.getStatus() != null) {
-            booking.setStatus(dto.getStatus());         // ✅ aggiorna lo status se fornito
+            booking.setStatus(dto.getStatus());
         }
 
         return bookingMapper.toDTO(bookingRepository.save(booking));
     }
 
-    // ---------------------------------------------------------
-    // DELETE BOOKING
-    // ---------------------------------------------------------
     public void deleteBooking(Long id, String ownerEmail) {
 
         Booking booking = bookingRepository.findById(id)
@@ -154,12 +140,9 @@ public class BookingService {
             throw new IllegalStateException("Non autorizzato");
         }
 
-        bookingRepository.delete(booking);  // ✅ rimossa query inutile su userRepository
+        bookingRepository.delete(booking);
     }
 
-    // ---------------------------------------------------------
-    // AVAILABLE SLOTS
-    // ---------------------------------------------------------
     public List<LocalTime> getAvailableSlots(LocalDate date, Long serviceId, String ownerEmail) {
 
         User owner = userRepository.findByEmail(ownerEmail)
@@ -171,6 +154,9 @@ public class BookingService {
         int duration = service.getDuration();
         DayOfWeek day = date.getDayOfWeek();
 
+        // ✅ LOG
+        System.out.println(">>> LOOKING FOR SCHEDULE: day=" + day + " barber_id=" + owner.getId());
+
         Schedule schedule = scheduleRepository
                 .findByBarberAndDayOfWeek(owner, day)
                 .orElseThrow(() -> new IllegalStateException("Nessun orario definito per questo giorno"));
@@ -178,7 +164,6 @@ public class BookingService {
         LocalTime open = schedule.getOpenTime();
         LocalTime close = schedule.getCloseTime();
 
-        // ✅ esclude prenotazioni cancellate dagli slot occupati
         List<Booking> bookings = bookingRepository.findByBarberAndDate(owner, date)
                 .stream()
                 .filter(b -> !b.getStatus().equals("CANCELLED"))
@@ -206,9 +191,6 @@ public class BookingService {
         return slots;
     }
 
-    // ---------------------------------------------------------
-    // METODO PRIVATO — validazione orari riutilizzabile
-    // ---------------------------------------------------------
     private void validateSchedule(User owner, LocalDateTime start, LocalDateTime end) {
 
         DayOfWeek day = start.getDayOfWeek();

@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "bookings": "Prenotazioni",
+    "customers": "Clienti",
+    "services": "Servizi",
+    "schedule": "Orari",
+    "logout": "Esci"
+  },
+  "auth": {
+    "login": "Accedi",
+    "register": "Registrati",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Accedi",
+    "registerButton": "Crea Account",
+    "noAccount": "Non hai un account?",
+    "hasAccount": "Hai già un account?"
+  },
+  "dashboard": {
+    "title": "Appuntamenti di oggi",
+    "noBookings": "Nessun appuntamento oggi",
+    "newBooking": "Nuova Prenotazione"
+  },
+  "bookings": {
+    "title": "Prenotazioni",
+    "new": "Nuova Prenotazione",
+    "customer": "Cliente",
+    "service": "Servizio",
+    "date": "Data",
+    "time": "Orario",
+    "notes": "Note",
+    "status": "Stato",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "confirmDelete": "Sei sicuro di voler eliminare questa prenotazione?",
+    "statuses": {
+      "PENDING": "In attesa",
+      "CONFIRMED": "Confermata",
+      "CANCELLED": "Annullata",
+      "COMPLETED": "Completata"
+    }
+  },
+  "customers": {
+    "title": "Clienti",
+    "new": "Nuovo Cliente",
+    "name": "Nome",
+    "surname": "Cognome",
+    "email": "Email",
+    "phone": "Telefono",
+    "notes": "Note",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "confirmDelete": "Sei sicuro di voler eliminare questo cliente?"
+  },
+  "services": {
+    "title": "Servizi",
+    "new": "Nuovo Servizio",
+    "name": "Nome",
+    "description": "Descrizione",
+    "duration": "Durata (minuti)",
+    "price": "Prezzo",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "confirmDelete": "Sei sicuro di voler eliminare questo servizio?"
+  },
+  "schedule": {
+    "title": "Orari di lavoro",
+    "day": "Giorno",
+    "open": "Orario apertura",
+    "close": "Orario chiusura",
+    "save": "Salva",
+    "delete": "Elimina",
+    "days": {
+      "MONDAY": "Lunedì",
+      "TUESDAY": "Martedì",
+      "WEDNESDAY": "Mercoledì",
+      "THURSDAY": "Giovedì",
+      "FRIDAY": "Venerdì",
+      "SATURDAY": "Sabato",
+      "SUNDAY": "Domenica"
+    }
+  },
+  "errors": {
+    "required": "Questo campo è obbligatorio",
+    "invalidEmail": "Indirizzo email non valido",
+    "serverError": "Errore del server, riprova",
+    "unauthorized": "Sessione scaduta, effettua il login"
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "confirm": "Conferma"
+  }
+}

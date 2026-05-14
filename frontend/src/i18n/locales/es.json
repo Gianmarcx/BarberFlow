@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "bookings": "Reservas",
+    "customers": "Clientes",
+    "services": "Servicios",
+    "schedule": "Horarios",
+    "logout": "Cerrar sesión"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "loginButton": "Entrar",
+    "registerButton": "Crear cuenta",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?"
+  },
+  "dashboard": {
+    "title": "Citas de hoy",
+    "noBookings": "No hay citas hoy",
+    "newBooking": "Nueva reserva"
+  },
+  "bookings": {
+    "title": "Reservas",
+    "new": "Nueva reserva",
+    "customer": "Cliente",
+    "service": "Servicio",
+    "date": "Fecha",
+    "time": "Hora",
+    "notes": "Notas",
+    "status": "Estado",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta reserva?",
+    "statuses": {
+      "PENDING": "Pendiente",
+      "CONFIRMED": "Confirmada",
+      "CANCELLED": "Cancelada",
+      "COMPLETED": "Completada"
+    }
+  },
+  "customers": {
+    "title": "Clientes",
+    "new": "Nuevo cliente",
+    "name": "Nombre",
+    "surname": "Apellido",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "notes": "Notas",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este cliente?"
+  },
+  "services": {
+    "title": "Servicios",
+    "new": "Nuevo servicio",
+    "name": "Nombre",
+    "description": "Descripción",
+    "duration": "Duración (minutos)",
+    "price": "Precio",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este servicio?"
+  },
+  "schedule": {
+    "title": "Horario de trabajo",
+    "day": "Día",
+    "open": "Hora de apertura",
+    "close": "Hora de cierre",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "days": {
+      "MONDAY": "Lunes",
+      "TUESDAY": "Martes",
+      "WEDNESDAY": "Miércoles",
+      "THURSDAY": "Jueves",
+      "FRIDAY": "Viernes",
+      "SATURDAY": "Sábado",
+      "SUNDAY": "Domingo"
+    }
+  },
+  "errors": {
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Dirección de correo no válida",
+    "serverError": "Error del servidor, inténtalo de nuevo",
+    "unauthorized": "Sesión expirada, inicia sesión de nuevo"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "confirm": "Confirmar"
+  }
+}

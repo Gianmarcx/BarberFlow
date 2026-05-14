@@ -32,12 +32,10 @@ public class ScheduleService {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        // ✅ validazione orari migliorata
         if (!dto.getOpenTime().isBefore(dto.getCloseTime())) {
             throw new IllegalStateException("L'orario di apertura deve essere prima della chiusura");
         }
 
-        // ✅ se esiste già uno schedule per quel giorno, aggiorna invece di duplicare
         Schedule schedule = scheduleRepository
                 .findByBarberAndDayOfWeek(owner, dto.getDayOfWeek())
                 .orElse(new Schedule());
@@ -46,6 +44,9 @@ public class ScheduleService {
         schedule.setDayOfWeek(dto.getDayOfWeek());
         schedule.setOpenTime(dto.getOpenTime());
         schedule.setCloseTime(dto.getCloseTime());
+
+        // ✅ LOG
+        System.out.println(">>> SAVING SCHEDULE: day=" + schedule.getDayOfWeek() + " barber_id=" + owner.getId());
 
         return scheduleMapper.toDTO(scheduleRepository.save(schedule));
     }
@@ -60,7 +61,6 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ aggiunto metodo mancante
     public void deleteSchedule(DayOfWeek dayOfWeek, String ownerEmail) {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));

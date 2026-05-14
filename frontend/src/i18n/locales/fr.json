@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "bookings": "Réservations",
+    "customers": "Clients",
+    "services": "Services",
+    "schedule": "Horaires",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "loginButton": "Se connecter",
+    "registerButton": "Créer un compte",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  },
+  "dashboard": {
+    "title": "Rendez-vous du jour",
+    "noBookings": "Aucun rendez-vous aujourd'hui",
+    "newBooking": "Nouveau rendez-vous"
+  },
+  "bookings": {
+    "title": "Réservations",
+    "new": "Nouvelle réservation",
+    "customer": "Client",
+    "service": "Service",
+    "date": "Date",
+    "time": "Heure",
+    "notes": "Notes",
+    "status": "Statut",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette réservation ?",
+    "statuses": {
+      "PENDING": "En attente",
+      "CONFIRMED": "Confirmée",
+      "CANCELLED": "Annulée",
+      "COMPLETED": "Terminée"
+    }
+  },
+  "customers": {
+    "title": "Clients",
+    "new": "Nouveau client",
+    "name": "Prénom",
+    "surname": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "notes": "Notes",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce client ?"
+  },
+  "services": {
+    "title": "Services",
+    "new": "Nouveau service",
+    "name": "Nom",
+    "description": "Description",
+    "duration": "Durée (minutes)",
+    "price": "Prix",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce service ?"
+  },
+  "schedule": {
+    "title": "Horaires de travail",
+    "day": "Jour",
+    "open": "Heure d'ouverture",
+    "close": "Heure de fermeture",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "days": {
+      "MONDAY": "Lundi",
+      "TUESDAY": "Mardi",
+      "WEDNESDAY": "Mercredi",
+      "THURSDAY": "Jeudi",
+      "FRIDAY": "Vendredi",
+      "SATURDAY": "Samedi",
+      "SUNDAY": "Dimanche"
+    }
+  },
+  "errors": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Adresse email invalide",
+    "serverError": "Erreur serveur, veuillez réessayer",
+    "unauthorized": "Session expirée, veuillez vous reconnecter"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "confirm": "Confirmer"
+  }
+}
