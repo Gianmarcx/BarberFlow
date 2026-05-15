@@ -11,19 +11,20 @@ public class ServiceMapper {
         return new ServiceDTO(
                 s.getId(),
                 s.getName(),
-                s.getDescription(),   // ✅ aggiunto
+                s.getDescription(),   
                 s.getDuration(),
                 s.getPrice()
         );
     }
 
     public ServiceEntity toEntity(ServiceDTO dto) {
-        return ServiceEntity.builder()
-                .id(dto.getId())
-                .name(dto.getName())
-                .description(dto.getDescription())  // ✅ aggiunto
-                .duration(dto.getDuration())
-                .price(dto.getPrice())
-                .build();
+        ServiceEntity entity = new ServiceEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());              
+        entity.setDescription(dto.getDescription());
+        entity.setDuration(dto.getDuration());
+        entity.setPrice(dto.getPrice());
+        
+        return entity;
     }
 }
