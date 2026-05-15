@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
 
+const emptyForm = {
+  name: '',
+  price: '',
+  duration: '',
+  description: ''
+}
+
 export default function ServicesPage() {
   const { t } = useTranslation()
 
@@ -11,16 +18,21 @@ export default function ServicesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingService, setEditingService] = useState(null)
 
-  const [form, setForm] = useState({
-    name: '',
-    price: '',
-    description: ''
-  })
-
+  const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
 
   useEffect(() => {
     loadServices()
+  }, [])
+
+  // ESC to close modal
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShowForm(false)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
   const loadServices = async () => {
@@ -36,13 +48,7 @@ export default function ServicesPage() {
 
   const openNew = () => {
     setEditingService(null)
-
-    setForm({
-      name: '',
-      price: '',
-      description: ''
-    })
-
+    setForm(emptyForm)
     setError('')
     setShowForm(true)
   }
@@ -52,8 +58,9 @@ export default function ServicesPage() {
 
     setForm({
       name: service.name || '',
-      price: service.price || '',
-      description: service.description || ''
+      price: service.price?.toString() || '',
+      description: service.description || '',
+       duration: service.duration?.toString() || ''
     })
 
     setError('')
@@ -68,17 +75,27 @@ export default function ServicesPage() {
   }
 
   const handleSave = async () => {
-    if (!form.name || !form.price) {
+    if (!form.name || form.price === '' || form.duration === '') {
       setError('Compila tutti i campi obbligatori')
+      return
+    }
+
+    const price = Number(form.price)
+
+    if (isNaN(price)) {
+      setError('Prezzo non valido')
       return
     }
 
     try {
       const payload = {
-        name: form.name,
+        name: form.name.trim,
         price: parseFloat(form.price),
-        description: form.description
+        duration:parseInt(form.duration,10),
+        description: form.description?.trim() ||''
       }
+
+      console.log('Payload inviato:' , payload)
 
       if (editingService) {
         await api.put(`/api/services/${editingService.id}`, payload)
@@ -87,8 +104,11 @@ export default function ServicesPage() {
       }
 
       setShowForm(false)
+      setForm(emptyForm)
       loadServices()
     } catch (err) {
+      console.error('Errore completo:', err)
+      console.error('Response:', err.response)
       setError(err.response?.data?.message || 'Errore salvataggio')
     }
   }
@@ -121,34 +141,10 @@ export default function ServicesPage() {
         </div>
 
         <button
+          type="button"
           onClick={openNew}
-          className="
-            flex items-center gap-2
-            px-4 py-2
-            bg-blue-600
-            text-white
-            rounded-xl
-            hover:bg-blue-700
-            transition
-            text-sm
-            font-medium
-            shadow
-          "
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-
           Nuovo Servizio
         </button>
 
@@ -156,11 +152,12 @@ export default function ServicesPage() {
 
       {/* Lista servizi */}
       {loading ? (
-        <p className="text-gray-400">{t('common.loading')}</p>
+        <p className="text-gray-400 animate-pulse">
+          {t('common.loading')}...
+        </p>
       ) : services.length === 0 ? (
         <div className="bg-white rounded-2xl shadow p-12 text-center">
           <p className="text-5xl mb-4">✂️</p>
-
           <p className="text-gray-400">
             Nessun servizio disponibile
           </p>
@@ -169,69 +166,33 @@ export default function ServicesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
           {services.map(service => (
-
             <div
               key={service.id}
-              className="
-                bg-white
-                rounded-2xl
-                shadow-sm
-                border
-                border-gray-100
-                p-5
-                hover:shadow-md
-                transition
-              "
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition"
             >
 
-              {/* Header */}
-              <div className="flex items-start justify-between">
-
-                <div>
-
-                  <h2 className="text-lg font-bold text-gray-800">
-                    {service.name}
-                  </h2>
-
-                </div>
-
-                <div className="
-                  bg-blue-100
-                  text-blue-700
-                  text-sm
-                  font-bold
-                  px-3
-                  py-1
-                  rounded-full
-                ">
-                  €{service.price}
-                </div>
-
+              
+                <div className="flex items-start justify-between">
+                  <h2 className="text-lg font-bold text-gray-800">{service.name}</h2>
+                <div className="flex gap-2">
+                  <div className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
+                    {service.duration} min
+                  </div>
+                  <div className="bg-blue-100 text-blue-700 text-sm font-bold px-3 py-1 rounded-full">
+                    €{service.price}
+                  </div>
               </div>
+          </div>
 
-              {/* Description */}
               {service.description && (
-                <div className="
-                  mt-4
-                  p-4
-                  bg-gray-50
-                  rounded-xl
-                ">
-
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {service.description}
                   </p>
-
                 </div>
               )}
 
-              {/* Footer */}
-              <div className="
-                flex items-center justify-between
-                mt-5
-                pt-4
-                border-t border-gray-100
-              ">
+              <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
 
                 <div className="text-xs text-gray-400">
                   ID #{service.id}
@@ -240,35 +201,25 @@ export default function ServicesPage() {
                 <div className="flex items-center gap-3">
 
                   <button
+                    type="button"
                     onClick={() => openEdit(service)}
-                    className="
-                      text-blue-600
-                      hover:text-blue-800
-                      text-sm
-                      font-medium
-                    "
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     {t('common.edit')}
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleDelete(service.id)}
-                    className="
-                      text-red-500
-                      hover:text-red-700
-                      text-sm
-                      font-medium
-                    "
+                    className="text-red-500 hover:text-red-700 text-sm font-medium"
                   >
                     {t('common.delete')}
                   </button>
 
                 </div>
-
               </div>
 
             </div>
-
           ))}
 
         </div>
@@ -276,39 +227,22 @@ export default function ServicesPage() {
 
       {/* Modal */}
       {showForm && (
-        <div className="
-          fixed inset-0
-          bg-black/50
-          flex items-center justify-center
-          z-50
-          p-4
-        ">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowForm(false)}
+        >
 
-          <div className="
-            bg-white
-            rounded-2xl
-            shadow-2xl
-            w-full
-            max-w-md
-            p-6
-            space-y-4
-          ">
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
 
             <h2 className="text-xl font-bold text-gray-800">
-              {editingService
-                ? 'Modifica Servizio'
-                : 'Nuovo Servizio'}
+              {editingService ? 'Modifica Servizio' : 'Nuovo Servizio'}
             </h2>
 
             {error && (
-              <div className="
-                p-3
-                bg-red-50
-                border border-red-200
-                rounded-xl
-                text-red-600
-                text-sm
-              ">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
                 {error}
               </div>
             )}
@@ -323,17 +257,7 @@ export default function ServicesPage() {
                 type="text"
                 value={form.name}
                 onChange={e => handleChange('name', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -348,17 +272,22 @@ export default function ServicesPage() {
                 step="0.01"
                 value={form.price}
                 onChange={e => handleChange('price', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+
+            {/* Durata */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('services.duration')} *
+              </label>
+            <input
+              type="number"
+              value={form.duration}
+              onChange={e => handleChange('duration', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="es. 30"
               />
             </div>
 
@@ -372,17 +301,7 @@ export default function ServicesPage() {
                 rows={3}
                 value={form.description}
                 onChange={e => handleChange('description', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -390,35 +309,17 @@ export default function ServicesPage() {
             <div className="flex gap-3 pt-2">
 
               <button
+                type="button"
                 onClick={() => setShowForm(false)}
-                className="
-                  flex-1
-                  py-3
-                  border border-gray-200
-                  rounded-xl
-                  text-sm
-                  font-medium
-                  text-gray-600
-                  hover:bg-gray-50
-                  transition
-                "
+                className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
               >
                 {t('common.cancel')}
               </button>
 
               <button
+                type="button"
                 onClick={handleSave}
-                className="
-                  flex-1
-                  py-3
-                  bg-blue-600
-                  text-white
-                  rounded-xl
-                  text-sm
-                  font-medium
-                  hover:bg-blue-700
-                  transition
-                "
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
               >
                 {t('common.save')}
               </button>
