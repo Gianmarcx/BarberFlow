@@ -89,7 +89,7 @@ export default function ServicesPage() {
 
     try {
       const payload = {
-        name: form.name.trim,
+        name: form.name.trim(),
         price: parseFloat(form.price),
         duration:parseInt(form.duration,10),
         description: form.description?.trim() ||''
@@ -108,7 +108,7 @@ export default function ServicesPage() {
       loadServices()
     } catch (err) {
       console.error('Errore completo:', err)
-      console.error('Response:', err.response)
+      console.error('Response:', err.response?.data)
       setError(err.response?.data?.message || 'Errore salvataggio')
     }
   }
