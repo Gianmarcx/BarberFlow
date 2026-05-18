@@ -23,7 +23,7 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name = "barber_id", nullable = false)
-    private User barber;
+    private Barber barber;
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)

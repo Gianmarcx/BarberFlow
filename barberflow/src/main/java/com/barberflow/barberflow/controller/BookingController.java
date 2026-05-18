@@ -55,9 +55,10 @@ public class BookingController {
     public ResponseEntity<List<LocalTime>> getAvailableSlots(
             @RequestParam LocalDate date,
             @RequestParam Long serviceId,
+            @RequestParam Long barberId,
             Authentication auth) {
         return ResponseEntity.ok(
-                bookingService.getAvailableSlots(date, serviceId, auth.getName())
+                bookingService.getAvailableSlots(date, serviceId, barberId, auth.getName())
         );
     }
 }

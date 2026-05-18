@@ -27,15 +27,18 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleDTO>> getAll(Authentication auth) {
-        return ResponseEntity.ok(scheduleService.getSchedules(auth.getName()));
+    public ResponseEntity<List<ScheduleDTO>> getAll(
+            @RequestParam Long barberId,       // ✅ aggiunto
+            Authentication auth) {
+        return ResponseEntity.ok(scheduleService.getSchedules(barberId, auth.getName()));
     }
 
-    @DeleteMapping("/{dayOfWeek}")          
+    @DeleteMapping("/{barberId}/{dayOfWeek}")  // ✅ aggiunto barberId nel path
     public ResponseEntity<Void> delete(
+            @PathVariable Long barberId,
             @PathVariable DayOfWeek dayOfWeek,
             Authentication auth) {
-        scheduleService.deleteSchedule(dayOfWeek, auth.getName());
+        scheduleService.deleteSchedule(barberId, dayOfWeek, auth.getName());
         return ResponseEntity.noContent().build();
     }
 }

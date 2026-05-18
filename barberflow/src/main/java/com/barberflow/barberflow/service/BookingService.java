@@ -1,12 +1,14 @@
 package com.barberflow.barberflow.service;
 
 import com.barberflow.barberflow.dto.BookingDTO;
+import com.barberflow.barberflow.entity.Barber;
 import com.barberflow.barberflow.entity.Booking;
 import com.barberflow.barberflow.entity.Customer;
 import com.barberflow.barberflow.entity.Schedule;
 import com.barberflow.barberflow.entity.ServiceEntity;
 import com.barberflow.barberflow.entity.User;
 import com.barberflow.barberflow.mapper.BookingMapper;
+import com.barberflow.barberflow.repository.BarberRepository;
 import com.barberflow.barberflow.repository.BookingRepository;
 import com.barberflow.barberflow.repository.CustomerRepository;
 import com.barberflow.barberflow.repository.ScheduleRepository;
@@ -29,6 +31,7 @@ public class BookingService {
     private final BookingMapper bookingMapper;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final BarberRepository barberRepository;
     private final ScheduleRepository scheduleRepository;
     private final ServiceRepository serviceRepository;
 
@@ -36,25 +39,36 @@ public class BookingService {
                           BookingMapper bookingMapper,
                           CustomerRepository customerRepository,
                           UserRepository userRepository,
+                          BarberRepository barberRepository,
                           ScheduleRepository scheduleRepository,
                           ServiceRepository serviceRepository) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
+        this.barberRepository = barberRepository;
         this.scheduleRepository = scheduleRepository;
         this.serviceRepository = serviceRepository;
     }
 
-    public BookingDTO createBooking(BookingDTO dto, String ownerEmail) {
+    public BookingDTO createBooking(BookingDTO dto, String shopEmail) {
 
-        User owner = userRepository.findByEmail(ownerEmail)
+        User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+
+        // ✅ recupera il barbiere dal DTO
+        Barber barber = barberRepository.findById(dto.getBarberId())
+                .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+
+        // ✅ verifica che il barbiere appartenga al negozio loggato
+        if (!barber.getShop().getEmail().equals(shopEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
 
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalStateException("Cliente non trovato"));
 
-        if (!customer.getOwner().getEmail().equals(ownerEmail)) {
+        if (!customer.getOwner().getEmail().equals(shopEmail)) {
             throw new IllegalStateException("Non autorizzato");
         }
 
@@ -64,15 +78,18 @@ public class BookingService {
         LocalDateTime start = dto.getStartTime();
         LocalDateTime end = start.plusMinutes(service.getDuration());
 
-        validateSchedule(owner, start, end);
+        validateSchedule(barber, start, end);
 
-        if (bookingRepository.existsOverlappingBooking(owner, start, end)) {
-            throw new IllegalStateException("Esiste già una prenotazione in questo orario");
+        // ✅ controllo sovrapposizioni per quel barbiere specifico
+        if (bookingRepository.existsOverlappingBooking(barber, start, end)) {
+            throw new IllegalStateException(
+                "Il barbiere " + barber.getName() + " ha già una prenotazione in questo orario"
+            );
         }
 
         Booking booking = new Booking();
         booking.setCustomer(customer);
-        booking.setBarber(owner);
+        booking.setBarber(barber);          // ✅ era owner (User), ora barber (Barber)
         booking.setService(service);
         booking.setStartTime(start);
         booking.setEndTime(end);
@@ -83,27 +100,43 @@ public class BookingService {
         return bookingMapper.toDTO(bookingRepository.save(booking));
     }
 
-    public List<BookingDTO> getBookings(String ownerEmail) {
+    public List<BookingDTO> getBookings(String shopEmail) {
 
-        User owner = userRepository.findByEmail(ownerEmail)
+        User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        return bookingRepository.findByBarber(owner)
-                .stream()
+        // ✅ recupera tutti i barbieri del negozio e le loro prenotazioni
+        List<Barber> barbers = barberRepository.findByShop(shop);
+
+        return barbers.stream()
+                .flatMap(barber -> bookingRepository.findByBarber(barber).stream())
                 .map(bookingMapper::toDTO)
+                .sorted((a, b) -> b.getStartTime().compareTo(a.getStartTime()))
                 .collect(Collectors.toList());
     }
 
-    public BookingDTO updateBooking(Long id, BookingDTO dto, String ownerEmail) {
+    public BookingDTO updateBooking(Long id, BookingDTO dto, String shopEmail) {
 
-        User owner = userRepository.findByEmail(ownerEmail)
+        User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
-        if (!booking.getBarber().getEmail().equals(ownerEmail)) {
+        // ✅ verifica che la prenotazione appartenga al negozio
+        if (!booking.getBarber().getShop().getEmail().equals(shopEmail)) {
             throw new IllegalStateException("Non autorizzato");
+        }
+
+        Barber barber = booking.getBarber();
+
+        // ✅ se cambia barbiere
+        if (dto.getBarberId() != null && !dto.getBarberId().equals(barber.getId())) {
+            barber = barberRepository.findById(dto.getBarberId())
+                    .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+            if (!barber.getShop().getEmail().equals(shopEmail)) {
+                throw new IllegalStateException("Non autorizzato");
+            }
         }
 
         ServiceEntity service = serviceRepository.findById(dto.getServiceId())
@@ -112,12 +145,15 @@ public class BookingService {
         LocalDateTime start = dto.getStartTime();
         LocalDateTime end = start.plusMinutes(service.getDuration());
 
-        validateSchedule(owner, start, end);
+        validateSchedule(barber, start, end);
 
-        if (bookingRepository.existsOverlappingBookingExcluding(owner, start, end, id)) {
-            throw new IllegalStateException("Esiste già una prenotazione in questo orario");
+        if (bookingRepository.existsOverlappingBookingExcluding(barber, start, end, id)) {
+            throw new IllegalStateException(
+                "Il barbiere " + barber.getName() + " ha già una prenotazione in questo orario"
+            );
         }
 
+        booking.setBarber(barber);
         booking.setService(service);
         booking.setStartTime(start);
         booking.setEndTime(end);
@@ -131,22 +167,27 @@ public class BookingService {
         return bookingMapper.toDTO(bookingRepository.save(booking));
     }
 
-    public void deleteBooking(Long id, String ownerEmail) {
+    public void deleteBooking(Long id, String shopEmail) {
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
-        if (!booking.getBarber().getEmail().equals(ownerEmail)) {
+        if (!booking.getBarber().getShop().getEmail().equals(shopEmail)) {
             throw new IllegalStateException("Non autorizzato");
         }
 
         bookingRepository.delete(booking);
     }
 
-    public List<LocalTime> getAvailableSlots(LocalDate date, Long serviceId, String ownerEmail) {
+    public List<LocalTime> getAvailableSlots(LocalDate date, Long serviceId, Long barberId, String shopEmail) {
 
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+        // ✅ aggiunto barberId come parametro
+        Barber barber = barberRepository.findById(barberId)
+                .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+
+        if (!barber.getShop().getEmail().equals(shopEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
 
         ServiceEntity service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
@@ -154,17 +195,14 @@ public class BookingService {
         int duration = service.getDuration();
         DayOfWeek day = date.getDayOfWeek();
 
-        // ✅ LOG
-        System.out.println(">>> LOOKING FOR SCHEDULE: day=" + day + " barber_id=" + owner.getId());
-
         Schedule schedule = scheduleRepository
-                .findByBarberAndDayOfWeek(owner, day)
+                .findByBarberAndDayOfWeek(barber, day)
                 .orElseThrow(() -> new IllegalStateException("Nessun orario definito per questo giorno"));
 
         LocalTime open = schedule.getOpenTime();
         LocalTime close = schedule.getCloseTime();
 
-        List<Booking> bookings = bookingRepository.findByBarberAndDate(owner, date)
+        List<Booking> bookings = bookingRepository.findByBarberAndDate(barber, date)
                 .stream()
                 .filter(b -> !b.getStatus().equals("CANCELLED"))
                 .collect(Collectors.toList());
@@ -191,12 +229,12 @@ public class BookingService {
         return slots;
     }
 
-    private void validateSchedule(User owner, LocalDateTime start, LocalDateTime end) {
+    private void validateSchedule(Barber barber, LocalDateTime start, LocalDateTime end) {
 
         DayOfWeek day = start.getDayOfWeek();
 
         Schedule schedule = scheduleRepository
-                .findByBarberAndDayOfWeek(owner, day)
+                .findByBarberAndDayOfWeek(barber, day)
                 .orElseThrow(() -> new IllegalStateException("Nessun orario definito per questo giorno"));
 
         LocalTime bookingStart = start.toLocalTime();

@@ -1,11 +1,11 @@
 package com.barberflow.barberflow.service;
 
 import com.barberflow.barberflow.dto.ScheduleDTO;
+import com.barberflow.barberflow.entity.Barber;
 import com.barberflow.barberflow.entity.Schedule;
-import com.barberflow.barberflow.entity.User;
 import com.barberflow.barberflow.mapper.ScheduleMapper;
+import com.barberflow.barberflow.repository.BarberRepository;
 import com.barberflow.barberflow.repository.ScheduleRepository;
-import com.barberflow.barberflow.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -16,57 +16,68 @@ import java.util.stream.Collectors;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
-    private final UserRepository userRepository;
+    private final BarberRepository barberRepository;
     private final ScheduleMapper scheduleMapper;
 
     public ScheduleService(ScheduleRepository scheduleRepository,
-                           UserRepository userRepository,
+                           BarberRepository barberRepository,
                            ScheduleMapper scheduleMapper) {
         this.scheduleRepository = scheduleRepository;
-        this.userRepository = userRepository;
+        this.barberRepository = barberRepository;
         this.scheduleMapper = scheduleMapper;
     }
 
-    public ScheduleDTO saveSchedule(ScheduleDTO dto, String ownerEmail) {
+    public ScheduleDTO saveSchedule(ScheduleDTO dto, String shopEmail) {
 
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+        Barber barber = barberRepository.findById(dto.getBarberId())
+                .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+
+        if (!barber.getShop().getEmail().equals(shopEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
 
         if (!dto.getOpenTime().isBefore(dto.getCloseTime())) {
             throw new IllegalStateException("L'orario di apertura deve essere prima della chiusura");
         }
 
         Schedule schedule = scheduleRepository
-                .findByBarberAndDayOfWeek(owner, dto.getDayOfWeek())
+                .findByBarberAndDayOfWeek(barber, dto.getDayOfWeek())
                 .orElse(new Schedule());
 
-        schedule.setBarber(owner);
+        schedule.setBarber(barber);
         schedule.setDayOfWeek(dto.getDayOfWeek());
         schedule.setOpenTime(dto.getOpenTime());
         schedule.setCloseTime(dto.getCloseTime());
 
-        // ✅ LOG
-        System.out.println(">>> SAVING SCHEDULE: day=" + schedule.getDayOfWeek() + " barber_id=" + owner.getId());
-
         return scheduleMapper.toDTO(scheduleRepository.save(schedule));
     }
 
-    public List<ScheduleDTO> getSchedules(String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+    public List<ScheduleDTO> getSchedules(Long barberId, String shopEmail) {
 
-        return scheduleRepository.findByBarber(owner)
+        Barber barber = barberRepository.findById(barberId)
+                .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+
+        if (!barber.getShop().getEmail().equals(shopEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
+
+        return scheduleRepository.findByBarber(barber)
                 .stream()
                 .map(scheduleMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public void deleteSchedule(DayOfWeek dayOfWeek, String ownerEmail) {
-        User owner = userRepository.findByEmail(ownerEmail)
-                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+    public void deleteSchedule(Long barberId, DayOfWeek dayOfWeek, String shopEmail) {
+
+        Barber barber = barberRepository.findById(barberId)
+                .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
+
+        if (!barber.getShop().getEmail().equals(shopEmail)) {
+            throw new IllegalStateException("Non autorizzato");
+        }
 
         Schedule schedule = scheduleRepository
-                .findByBarberAndDayOfWeek(owner, dayOfWeek)
+                .findByBarberAndDayOfWeek(barber, dayOfWeek)
                 .orElseThrow(() -> new IllegalStateException("Orario non trovato per questo giorno"));
 
         scheduleRepository.delete(schedule);

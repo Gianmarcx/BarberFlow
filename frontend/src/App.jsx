@@ -8,6 +8,7 @@ import BookingsPage from './pages/bookings/BookingsPage'
 import CustomersPage from './pages/customers/CustomersPage'
 import ServicesPage from './pages/services/ServicesPage'
 import SchedulePage from './pages/schedule/SchedulePage'
+import BarberPage from './pages/barber/BarberPage'
 import Layout from './components/Layout'
 
 function PrivateRoute({ children }) {
@@ -20,6 +21,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      
       <Route path="/" element={
         <PrivateRoute>
           <Layout />
@@ -30,6 +32,10 @@ function AppRoutes() {
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="services" element={<ServicesPage />} />
+        
+        {/* ✅ RIGA AGGIUNTA: Qui colleghiamo il percorso /barber alla pagina */}
+        <Route path="barber" element={<BarberPage />} />
+        
         <Route path="schedule" element={<SchedulePage />} />
       </Route>
     </Routes>

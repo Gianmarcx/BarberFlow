@@ -69,3 +69,11 @@ CREATE TABLE subscription_status (
   active BOOLEAN NOT NULL DEFAULT TRUE,        -- ✅ è attiva?
   CONSTRAINT fk_subscription_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE barbers (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  specialization VARCHAR(255),
+  shop_id BIGINT NOT NULL,             -- ✅ era owner_id
+  CONSTRAINT fk_barbers_shop FOREIGN KEY (shop_id) REFERENCES users(id) ON DELETE CASCADE
+);

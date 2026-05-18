@@ -30,7 +30,7 @@ public class Schedule {
 
     @ManyToOne
     @JoinColumn(name = "barber_id", nullable = false)  // ✅ era "user_id", corretto in "barber_id"
-    private User barber;
+    private Barber barber;
 
-    // ✅ Rimossi getter e setter manuali
+    
 }

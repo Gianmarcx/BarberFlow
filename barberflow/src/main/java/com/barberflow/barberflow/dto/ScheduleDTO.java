@@ -6,9 +6,9 @@ import java.time.LocalTime;
 
 @Data
 public class ScheduleDTO {
-
     private Long id;
-    private DayOfWeek dayOfWeek;   
+    private Long barberId;          // ✅ aggiunto
+    private DayOfWeek dayOfWeek;
     private LocalTime openTime;
     private LocalTime closeTime;
 }

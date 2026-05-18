@@ -1,7 +1,7 @@
 package com.barberflow.barberflow.repository;
 
+import com.barberflow.barberflow.entity.Barber;
 import com.barberflow.barberflow.entity.Schedule;
-import com.barberflow.barberflow.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.DayOfWeek;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findByBarber(User barber);
+    List<Schedule> findByBarber(Barber barber);
 
-    Optional <Schedule> findByBarberAndDayOfWeek(User barber, DayOfWeek dayOfWeek);
+    Optional<Schedule> findByBarberAndDayOfWeek(Barber barber, DayOfWeek dayOfWeek);
 }
