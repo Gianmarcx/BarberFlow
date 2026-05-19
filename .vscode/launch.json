@@ -2,11 +2,11 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Spring Boot-BarberflowApplication<barberflow>",
+            "name": "Spring Boot - TrimflowApplication <trimflow>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "mainClass": "com.barberflow.barberflow.BarberflowApplication",
-            "projectName": "barberflow",
+            "mainClass": "com.trimflow.trimflow.TrimflowApplication",
+            "projectName": "trimflow",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

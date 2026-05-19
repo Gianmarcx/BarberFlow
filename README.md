@@ -1,4 +1,4 @@
-# BarberFlow - Professional Barber Shop Management System
+# Trimflow - Professional Barber Shop Management System
 
 > A complete, production-ready management system for barbershops and salons. Built with React, Spring Boot, and MariaDB.
 
@@ -83,8 +83,8 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/barberflow.git
-cd barberflow
+git clone https://github.com/yourusername/Trimflow.git
+cd Trimflow
 
 # Copy environment files
 cp backend/.env.example backend/.env
@@ -108,7 +108,7 @@ docker-compose up -d
 
 ```bash
 # Create the database
-mysql -u root -p -e "CREATE DATABASE barberflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE Trimflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # Run Flyway migrations (optional - auto-run on first backend start)
 cd backend
@@ -161,7 +161,7 @@ Open your browser and navigate to:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SERVER_PORT` | `8081` | Backend server port |
-| `DB_URL` | `jdbc:mariadb://127.0.0.1:3306/barberflow` | Database connection URL |
+| `DB_URL` | `jdbc:mariadb://127.0.0.1:3306/Trimflow` | Database connection URL |
 | `DB_USERNAME` | `root` | Database username |
 | `DB_PASSWORD` | *(empty)* | Database password |
 | `DB_DDL_AUTO` | `update` | Hibernate schema strategy (`update`/`validate`/`none`) |
@@ -251,7 +251,7 @@ Create separate configuration files for different environments:
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=false
 logging.level.root=INFO
-logging.level.com.barberflow=INFO
+logging.level.com.Trimflow=INFO
 ```
 
 Activate with: `--spring.profiles.active=prod`
@@ -287,11 +287,11 @@ npm run lint              # Run ESLint checks
 ```bash
 # Build backend image
 cd backend
-docker build -t barberflow-backend:latest .
+docker build -t Trimflow-backend:latest .
 
 # Build frontend image
 cd ../frontend
-docker build -t barberflow-frontend:latest .
+docker build -t Trimflow-frontend:latest .
 ```
 
 ### Run with Docker Compose
@@ -318,7 +318,7 @@ services:
     image: mariadb:10.11
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
-      MARIADB_DATABASE: barberflow
+      MARIADB_DATABASE: Trimflow
     volumes:
       - db_data:/var/lib/mysql
   
@@ -327,7 +327,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_URL=jdbc:mariadb://db:3306/barberflow
+      - DB_URL=jdbc:mariadb://db:3306/Trimflow
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - db
@@ -345,7 +345,7 @@ volumes:
 
 ---
 
-## 🔄 Updating BarberFlow
+## 🔄 Updating Trimflow
 
 ### From Source
 
@@ -379,7 +379,7 @@ mvn flyway:info
 
 ## 🤝 Contributing
 
-BarberFlow is a commercial product. However, we welcome:
+Trimflow is a commercial product. However, we welcome:
 
 - 🐛 **Bug Reports**: Open an issue with steps to reproduce
 - 💡 **Feature Requests**: Describe your use case and desired functionality
@@ -388,7 +388,7 @@ BarberFlow is a commercial product. However, we welcome:
 ### Reporting Issues
 
 When reporting a bug, please include:
-1. BarberFlow version
+1. Trimflow version
 2. Environment details (OS, Node/Java versions)
 3. Steps to reproduce the issue
 4. Expected vs. actual behavior
@@ -398,10 +398,10 @@ When reporting a bug, please include:
 
 ## 📄 License
 
-BarberFlow is distributed under a **Commercial License**.
+Trimflow is distributed under a **Commercial License**.
 
 ### ✅ You May:
-- Use BarberFlow for your own business or client projects
+- Use Trimflow for your own business or client projects
 - Modify the source code for your specific needs
 - Deploy to unlimited locations under a single license
 
@@ -418,7 +418,7 @@ BarberFlow is distributed under a **Commercial License**.
 | **Professional** | $99 | Starter + 6 months updates + email support |
 | **Agency** | $199 | Professional + unlimited projects + priority support |
 
-> For custom licensing or enterprise inquiries, contact: **support@barberflow.dev**
+> For custom licensing or enterprise inquiries, contact: **support@Trimflow.dev**
 
 ---
 
@@ -443,14 +443,14 @@ BarberFlow is distributed under a **Commercial License**.
 | 💬 Discord | Community | All users |
 | 🎫 Priority Ticket | 4-8 hours | Agency license |
 
-📧 **Email**: support@barberflow.dev  
-💬 **Discord**: [Join our community](https://discord.gg/barberflow) *(coming soon)*
+📧 **Email**: support@Trimflow.dev  
+💬 **Discord**: [Join our community](https://discord.gg/Trimflow) *(coming soon)*
 
 ---
 
 ## 🙏 Acknowledgments
 
-BarberFlow is built with love using these amazing open-source projects:
+Trimflow is built with love using these amazing open-source projects:
 
 - [React](https://react.dev) - A JavaScript library for building user interfaces
 - [Spring Boot](https://spring.io/projects/spring-boot) - Production-ready framework
@@ -475,6 +475,6 @@ Planned features for upcoming releases:
 
 ---
 
-> **BarberFlow** — Streamline your barbershop operations. Focus on your craft, we'll handle the rest. ✂️🚀
+> **Trimflow** — Streamline your barbershop operations. Focus on your craft, we'll handle the rest. ✂️🚀
 
 *Made with ❤️ for barbers, by developers who understand your business.*

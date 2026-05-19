@@ -1,6 +1,46 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+
+const HOUR_HEIGHT = 60
+const START_HOUR = 8
+const END_HOUR = 21
+
+const statusColors = {
+  PENDING: 'bg-yellow-100 border-yellow-400 text-yellow-800',
+  CONFIRMED: 'bg-green-100 border-green-400 text-green-800',
+  CANCELLED: 'bg-red-100 border-red-400 text-red-600 line-through',
+  COMPLETED: 'bg-gray-100 border-gray-400 text-gray-600'
+}
+
+function getWeekDays(date) {
+  const day = date.getDay()
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+  const monday = new Date(date.setDate(diff))
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d
+  })
+}
+
+function timeToMinutes(time) {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+function getTopPosition(startTime) {
+  const time = startTime.split('T')[1]?.slice(0, 5) || '00:00'
+  const minutes = timeToMinutes(time)
+  const startMinutes = START_HOUR * 60
+  return ((minutes - startMinutes) / 60) * HOUR_HEIGHT
+}
+
+function getHeight(startTime, endTime) {
+  const startMin = timeToMinutes(startTime.split('T')[1]?.slice(0, 5) || '00:00')
+  const endMin = timeToMinutes(endTime.split('T')[1]?.slice(0, 5) || '00:00')
+  return ((endMin - startMin) / 60) * HOUR_HEIGHT
+}
 
 export default function BookingsPage() {
   const { t } = useTranslation()
@@ -8,20 +48,24 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState([])
   const [customers, setCustomers] = useState([])
   const [services, setServices] = useState([])
+  const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [weekDays, setWeekDays] = useState([])
+  const [selectedBarber, setSelectedBarber] = useState('all')
   const [showForm, setShowForm] = useState(false)
   const [editingBooking, setEditingBooking] = useState(null)
   const [availableSlots, setAvailableSlots] = useState([])
   const [error, setError] = useState('')
-  const [savingCustomer, setSavingCustomer] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const scrollRef = useRef(null)
 
   const [form, setForm] = useState({
-    // Dati cliente
     customerName: '',
     customerSurname: '',
     customerPhone: '',
     customerId: null,
-    // Dati prenotazione
+    barberId: '',
     serviceId: '',
     date: '',
     startTime: '',
@@ -33,16 +77,28 @@ export default function BookingsPage() {
     loadAll()
   }, [])
 
+  useEffect(() => {
+    setWeekDays(getWeekDays(new Date(currentDate)))
+  }, [currentDate])
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0
+    }
+  }, [])
+
   const loadAll = async () => {
     try {
-      const [bookingsRes, customersRes, servicesRes] = await Promise.all([
+      const [bookingsRes, customersRes, servicesRes, barbersRes] = await Promise.all([
         api.get('/api/bookings'),
         api.get('/api/customers'),
-        api.get('/api/services')
+        api.get('/api/services'),
+        api.get('/api/barbers')
       ])
-      setBookings(bookingsRes.data.sort((a, b) => b.startTime.localeCompare(a.startTime)))
+      setBookings(bookingsRes.data)
       setCustomers(customersRes.data)
       setServices(servicesRes.data)
+      setBarbers(barbersRes.data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -50,14 +106,14 @@ export default function BookingsPage() {
     }
   }
 
-  const loadSlots = async (date, serviceId) => {
-    if (!date || !serviceId) return
+  const loadSlots = async (date, serviceId, barberId) => {
+    if (!date || !serviceId || !barberId) return
     try {
       const res = await api.get('/api/bookings/available', {
-        params: { date, serviceId }
+        params: { date, serviceId, barberId }
       })
       setAvailableSlots(res.data)
-    } catch (err) {
+    } catch {
       setAvailableSlots([])
     }
   }
@@ -65,22 +121,30 @@ export default function BookingsPage() {
   const handleFormChange = (field, value) => {
     const updated = { ...form, [field]: value }
     setForm(updated)
-    if (field === 'date' || field === 'serviceId') {
-      loadSlots(updated.date, updated.serviceId)
+    if (['date', 'serviceId', 'barberId'].includes(field)) {
+      loadSlots(updated.date, updated.serviceId, updated.barberId)
     }
   }
 
-  const openNew = () => {
+  const prevWeek = () => {
+    const d = new Date(currentDate)
+    d.setDate(d.getDate() - 7)
+    setCurrentDate(d)
+  }
+
+  const nextWeek = () => {
+    const d = new Date(currentDate)
+    d.setDate(d.getDate() + 7)
+    setCurrentDate(d)
+  }
+
+  const goToToday = () => setCurrentDate(new Date())
+
+  const openNew = (date = '', time = '') => {
     setForm({
-      customerName: '',
-      customerSurname: '',
-      customerPhone: '',
-      customerId: null,
-      serviceId: '',
-      date: '',
-      startTime: '',
-      status: 'PENDING',
-      notes: ''
+      customerName: '', customerSurname: '', customerPhone: '',
+      customerId: null, barberId: '', serviceId: '',
+      date, startTime: time, status: 'PENDING', notes: ''
     })
     setEditingBooking(null)
     setAvailableSlots([])
@@ -88,7 +152,8 @@ export default function BookingsPage() {
     setShowForm(true)
   }
 
-  const openEdit = (booking) => {
+  const openEdit = (booking, e) => {
+    e.stopPropagation()
     const customer = customers.find(c => c.id === booking.customerId)
     const date = booking.startTime?.split('T')[0]
     const time = booking.startTime?.split('T')[1]?.slice(0, 5)
@@ -97,29 +162,26 @@ export default function BookingsPage() {
       customerSurname: customer?.surname || '',
       customerPhone: customer?.phone || '',
       customerId: booking.customerId,
-      serviceId: booking.serviceId,
-      date,
-      startTime: time,
+      barberId: booking.barberId?.toString() || '',
+      serviceId: booking.serviceId?.toString() || '',
+      date, startTime: time,
       status: booking.status,
       notes: booking.notes || ''
     })
     setEditingBooking(booking)
-    loadSlots(date, booking.serviceId)
+    loadSlots(date, booking.serviceId, booking.barberId)
     setError('')
     setShowForm(true)
   }
 
   const handleSave = async () => {
-    if (!form.customerName || !form.serviceId || !form.date || !form.startTime) {
+    if (!form.customerName || !form.serviceId || !form.date || !form.startTime || !form.barberId) {
       setError('Compila tutti i campi obbligatori')
       return
     }
-
     try {
-      setSavingCustomer(true)
+      setSaving(true)
       let customerId = form.customerId
-
-      // Se è una nuova prenotazione crea prima il cliente
       if (!editingBooking) {
         const customerRes = await api.post('/api/customers', {
           name: form.customerName,
@@ -128,31 +190,30 @@ export default function BookingsPage() {
         })
         customerId = customerRes.data.id
       }
-
       const payload = {
         customerId,
+        barberId: parseInt(form.barberId),
         serviceId: parseInt(form.serviceId),
         startTime: `${form.date}T${form.startTime}:00`,
         status: form.status,
         notes: form.notes
       }
-
       if (editingBooking) {
         await api.put(`/api/bookings/${editingBooking.id}`, payload)
       } else {
         await api.post('/api/bookings', payload)
       }
-
       setShowForm(false)
       loadAll()
     } catch (err) {
       setError(err.response?.data?.message || t('errors.serverError'))
     } finally {
-      setSavingCustomer(false)
+      setSaving(false)
     }
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, e) => {
+    e.stopPropagation()
     if (!window.confirm(t('bookings.confirmDelete'))) return
     try {
       await api.delete(`/api/bookings/${id}`)
@@ -162,28 +223,9 @@ export default function BookingsPage() {
     }
   }
 
-  const formatTime = (datetime) => {
-    if (!datetime) return ''
-    return datetime.split('T')[1]?.slice(0, 5)
-  }
-
-  const formatDate = (datetime) => {
-    if (!datetime) return ''
-    return new Date(datetime).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    })
-  }
-
-  const statusColors = {
-    PENDING: 'bg-yellow-100 text-yellow-700',
-    CONFIRMED: 'bg-green-100 text-green-700',
-    CANCELLED: 'bg-red-100 text-red-600',
-    COMPLETED: 'bg-gray-100 text-gray-600'
-  }
-
   const getCustomerName = (id) => {
     const c = customers.find(c => c.id === id)
-    return c ? `${c.name} ${c.surname || ''}` : `#${id}`
+    return c ? `${c.name} ${c.surname || ''}`.trim() : `#${id}`
   }
 
   const getServiceName = (id) => {
@@ -191,76 +233,225 @@ export default function BookingsPage() {
     return s ? s.name : `#${id}`
   }
 
-  return (
-    <div className="space-y-4">
+  const getBarberName = (id) => {
+    const b = barbers.find(b => b.id === id)
+    return b ? b.name : `#${id}`
+  }
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t('bookings.title')}</h1>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t('bookings.new')}
-        </button>
+  const isToday = (date) => {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
+  }
+
+  const getBookingsForDay = (date) => {
+    const dateStr = date.toISOString().split('T')[0]
+    return bookings.filter(b => {
+      const bookingDate = b.startTime?.split('T')[0]
+      const matchesDate = bookingDate === dateStr
+      const matchesBarber = selectedBarber === 'all' || b.barberId === parseInt(selectedBarber)
+      return matchesDate && matchesBarber
+    })
+  }
+
+  const hours = Array.from(
+    { length: END_HOUR - START_HOUR },
+    (_, i) => START_HOUR + i
+  )
+
+  const dayNames = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+
+  const formatWeekRange = () => {
+    if (weekDays.length === 0) return ''
+    const first = weekDays[0]
+    const last = weekDays[6]
+    return `${first.getDate()} ${first.toLocaleString('en', { month: 'short' })} – ${last.getDate()} ${last.toLocaleString('en', { month: 'short' })} ${last.getFullYear()}`
+  }
+
+  if (loading) return <p className="text-gray-400">{t('common.loading')}</p>
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-6rem)] bg-white rounded-2xl shadow overflow-hidden">
+
+      {/* Toolbar */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={goToToday}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+          >
+            Today
+          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={prevWeek} className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button onClick={nextWeek} className="p-1.5 rounded-lg hover:bg-gray-100 transition">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          <span className="text-base font-semibold text-gray-800">
+            {formatWeekRange()}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedBarber}
+            onChange={e => setSelectedBarber(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All barbers</option>
+            {barbers.map(b => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => openNew()}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t('bookings.new')}
+          </button>
+        </div>
       </div>
 
-      {/* Lista */}
-      {loading ? (
-        <p className="text-gray-400">{t('common.loading')}</p>
-      ) : bookings.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-12 text-center">
-          <p className="text-5xl mb-4">📅</p>
-          <p className="text-gray-400">{t('bookings.empty')}</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          {bookings.map((booking, i) => (
-            <div
-              key={booking.id}
-              className={`flex items-center justify-between p-4 hover:bg-gray-50 transition ${i !== bookings.length - 1 ? 'border-b border-gray-100' : ''}`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-800 text-white text-sm font-bold px-3 py-2 rounded-lg text-center min-w-[60px]">
-                  {formatTime(booking.startTime)}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    {getCustomerName(booking.customerId)}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {getServiceName(booking.serviceId)} · {formatDate(booking.startTime)}
-                  </p>
-                  {booking.notes && (
-                    <p className="text-xs text-gray-400 italic">{booking.notes}</p>
-                  )}
-                </div>
-              </div>
+      {/* Header giorni */}
+      <div className="flex border-b border-gray-100">
+        <div className="w-16 flex-shrink-0" />
+        {weekDays.map((day, i) => (
+          <div key={i} className="flex-1 text-center py-3 border-l border-gray-100">
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+              {dayNames[i]}
+            </p>
+            <p className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
+              isToday(day) ? 'bg-blue-600 text-white' : 'text-gray-800'
+            }`}>
+              {day.getDate()}
+            </p>
+          </div>
+        ))}
+      </div>
 
-              <div className="flex items-center gap-3">
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColors[booking.status]}`}>
-                  {t(`bookings.statuses.${booking.status}`)}
+      {/* Griglia calendario */}
+      <div ref={scrollRef} className="flex-1 overflow-auto">
+        <div className="flex" style={{ height: `${HOUR_HEIGHT * (END_HOUR - START_HOUR)}px` }}>
+
+          {/* Colonna orari */}
+          <div className="w-16 flex-shrink-0 relative">
+            {hours.map(hour => (
+              <div
+                key={hour}
+                className="absolute w-full text-right pr-2"
+                style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT - 8}px` }}
+              >
+                <span className="text-xs text-gray-400">
+                  {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
                 </span>
-                <button
-                  onClick={() => openEdit(booking)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  {t('common.edit')}
-                </button>
-                <button
-                  onClick={() => handleDelete(booking.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium"
-                >
-                  {t('common.delete')}
-                </button>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Colonne giorni */}
+          {weekDays.map((day, i) => {
+            const dayBookings = getBookingsForDay(day)
+            const dateStr = day.toISOString().split('T')[0]
+
+            return (
+              <div
+                key={i}
+                className="flex-1 border-l border-gray-100 relative cursor-pointer"
+                onClick={() => openNew(dateStr, '')}
+              >
+                {/* Righe orarie */}
+                {hours.map(hour => (
+                  <div
+                    key={hour}
+                    className="border-t border-gray-100"
+                    style={{ height: `${HOUR_HEIGHT}px` }}
+                  />
+                ))}
+
+                {/* Linea ora corrente */}
+                {isToday(day) && (() => {
+                  const now = new Date()
+                  const minutes = now.getHours() * 60 + now.getMinutes()
+                  const startMinutes = START_HOUR * 60
+                  if (minutes < startMinutes || minutes > END_HOUR * 60) return null
+                  const top = ((minutes - startMinutes) / 60) * HOUR_HEIGHT
+                  return (
+                    <div
+                      className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
+                      style={{ top: `${top}px` }}
+                    >
+                      <div className="w-2 h-2 rounded-full bg-red-500 -ml-1" />
+                      <div className="flex-1 h-px bg-red-500" />
+                    </div>
+                  )
+                })()}
+
+                {/* Prenotazioni */}
+                {dayBookings.map(booking => {
+                  const top = getTopPosition(booking.startTime)
+                  const height = getHeight(booking.startTime, booking.endTime)
+                  const colorClass = statusColors[booking.status] || statusColors.PENDING
+                  const startTime = booking.startTime?.split('T')[1]?.slice(0, 5)
+                  const endTime = booking.endTime?.split('T')[1]?.slice(0, 5)
+                  
+
+                  return (
+                    <div
+                      key={booking.id}
+                      className={`absolute left-1 right-1 rounded-lg border-l-4 px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition ${colorClass}`}
+                      style={{ top: `${top}px`, height: `${Math.max(height, 24)}px` }}
+                      onClick={e => openEdit(booking, e)}
+                    >
+                      {/* Orario + Nome — sempre visibile */}
+                      <p className="text-xs font-bold leading-tight truncate">
+                        {startTime} - {endTime} · {getCustomerName(booking.customerId)}
+                      </p>
+
+                      {/* Servizio */}
+                      {height > 30 && (
+                        <p className="text-xs leading-tight truncate opacity-80">
+                          ✂️ {getServiceName(booking.serviceId)}
+                        </p>
+                      )}
+
+                      {/* Barbiere */}
+                      {height > 45 && (
+                        <p className="text-xs leading-tight truncate opacity-70">
+                          👤 {getBarberName(booking.barberId)}
+                        </p>
+                      )}
+
+                      {/* Note */}
+                      {height > 60 && booking.notes && (
+                        <p className="text-xs leading-tight truncate opacity-60 italic">
+                          📝 {booking.notes}
+                        </p>
+                      )}
+
+                      {/* Status */}
+                      {height > 75 && (
+                        <span className="text-xs font-medium opacity-80">
+                          {t(`bookings.statuses.${booking.status}`)}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
         </div>
-      )}
+      </div>
 
       {/* Modal form */}
       {showForm && (
@@ -277,11 +468,10 @@ export default function BookingsPage() {
               </div>
             )}
 
-            {/* Dati cliente — solo per nuova prenotazione */}
+            {/* Cliente — solo nuova prenotazione */}
             {!editingBooking && (
               <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700">👤 {t('customers.title')}</p>
-
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
@@ -298,7 +488,6 @@ export default function BookingsPage() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-
                 <input
                   type="tel"
                   value={form.customerPhone}
@@ -308,6 +497,23 @@ export default function BookingsPage() {
                 />
               </div>
             )}
+
+            {/* Barbiere */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Barber *
+              </label>
+              <select
+                value={form.barberId}
+                onChange={e => handleFormChange('barberId', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Select barber --</option>
+                {barbers.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
 
             {/* Servizio */}
             <div>
@@ -365,13 +571,13 @@ export default function BookingsPage() {
               </div>
             )}
 
-            {availableSlots.length === 0 && form.date && form.serviceId && (
+            {availableSlots.length === 0 && form.date && form.serviceId && form.barberId && (
               <p className="text-sm text-red-500">
                 Nessuno slot disponibile per questa data
               </p>
             )}
 
-            {/* Status — solo in modifica */}
+            {/* Status — solo modifica */}
             {editingBooking && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -399,7 +605,7 @@ export default function BookingsPage() {
                 onChange={e => handleFormChange('notes', e.target.value)}
                 rows={2}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={t('bookings.notesPlaceholder')}
+                placeholder="Note opzionali..."
               />
             </div>
 
@@ -413,12 +619,25 @@ export default function BookingsPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={savingCustomer}
+                disabled={saving}
                 className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
               >
-                {savingCustomer ? t('common.loading') : t('common.save')}
+                {saving ? t('common.loading') : t('common.save')}
               </button>
             </div>
+
+            {/* Delete — solo modifica */}
+            {editingBooking && (
+              <button
+                onClick={(e) => {
+                  handleDelete(editingBooking.id, e)
+                  setShowForm(false)
+                }}
+                className="w-full py-2 text-red-500 hover:text-red-700 text-sm font-medium transition"
+              >
+                {t('common.delete')}
+              </button>
+            )}
 
           </div>
         </div>
