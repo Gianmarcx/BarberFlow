@@ -43,28 +43,24 @@ export default function CustomersPage() {
 
   const openNew = () => {
     setEditingCustomer(null)
-
     setForm({
       name: '',
       surname: '',
       phone: '',
       notes: ''
     })
-
     setError('')
     setShowForm(true)
   }
 
   const openEdit = (customer) => {
     setEditingCustomer(customer)
-
     setForm({
       name: customer.name || '',
       surname: customer.surname || '',
       phone: customer.phone || '',
       notes: customer.notes || ''
     })
-
     setError('')
     setShowForm(true)
   }
@@ -78,21 +74,17 @@ export default function CustomersPage() {
 
   const handleSave = async () => {
     if (!form.name || !form.phone) {
-      setError('Nome e telefono obbligatori')
+      setError(t('errors.required'))
       return
     }
 
     try {
-      // Controllo duplicati:
-      // stesso nome + stesso telefono = update
       const existingCustomer = customers.find(
-        c =>
-          c.phone === form.phone &&
-          c.id !== editingCustomer?.id
+        c => c.phone === form.phone && c.id !== editingCustomer?.id
       )
 
       if (existingCustomer && !editingCustomer) {
-        setError('Cliente con questo numero già esistente')
+        setError(t('customers.phoneExists'))
         return
       }
 
@@ -112,7 +104,7 @@ export default function CustomersPage() {
       setShowForm(false)
       loadAll()
     } catch (err) {
-      setError(err.response?.data?.message || 'Errore salvataggio')
+      setError(err.response?.data?.message || t('errors.serverError'))
     }
   }
 
@@ -133,7 +125,6 @@ export default function CustomersPage() {
 
   const getLastBooking = (customerId) => {
     const customerBookings = getCustomerBookings(customerId)
-
     if (customerBookings.length === 0) return null
 
     return customerBookings.sort((a, b) =>
@@ -143,8 +134,7 @@ export default function CustomersPage() {
 
   const formatDate = (date) => {
     if (!date) return '-'
-
-    return new Date(date).toLocaleDateString('it-IT', {
+    return new Date(date).toLocaleDateString(t('locale'), {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
@@ -153,52 +143,26 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-4">
-
       {/* Header */}
       <div className="flex items-center justify-between">
-
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
             {t('customers.title')}
           </h1>
-
           <p className="text-sm text-gray-400 mt-1">
-            Gestisci agenda clienti e storico prenotazioni
+            {t('customers.subtitle')}
           </p>
         </div>
 
         <button
           onClick={openNew}
-          className="
-            flex items-center gap-2
-            px-4 py-2
-            bg-blue-600
-            text-white
-            rounded-xl
-            hover:bg-blue-700
-            transition
-            text-sm
-            font-medium
-            shadow
-          "
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-
-          Nuovo Cliente
+          {t('customers.new')}
         </button>
-
       </div>
 
       {/* Lista clienti */}
@@ -207,86 +171,52 @@ export default function CustomersPage() {
       ) : customers.length === 0 ? (
         <div className="bg-white rounded-2xl shadow p-12 text-center">
           <p className="text-5xl mb-4">👤</p>
-          <p className="text-gray-400">
-            Nessun cliente presente
-          </p>
+          <p className="text-gray-400">{t('customers.empty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-
           {customers.map(customer => {
-
             const customerBookings = getCustomerBookings(customer.id)
             const lastBooking = getLastBooking(customer.id)
 
             return (
               <div
                 key={customer.id}
-                className="
-                  bg-white
-                  rounded-2xl
-                  shadow-sm
-                  border
-                  border-gray-100
-                  p-5
-                  hover:shadow-md
-                  transition
-                "
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition"
               >
-
                 {/* Header card */}
                 <div className="flex items-start justify-between">
-
                   <div>
-
                     <h2 className="text-lg font-bold text-gray-800">
                       {customer.name} {customer.surname}
                     </h2>
-
                     <p className="text-sm text-gray-500 mt-1">
-                      📞 {customer.phone || 'Nessun telefono'}
+                      📞 {customer.phone || t('customers.noPhone')}
                     </p>
-
                   </div>
 
                   <div className="flex items-center gap-3">
-
                     <button
                       onClick={() => openEdit(customer)}
-                      className="
-                        text-blue-600
-                        hover:text-blue-800
-                        text-sm
-                        font-medium
-                      "
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
                       {t('common.edit')}
                     </button>
-
                     <button
                       onClick={() => handleDelete(customer.id)}
-                      className="
-                        text-red-500
-                        hover:text-red-700
-                        text-sm
-                        font-medium
-                      "
+                      className="text-red-500 hover:text-red-700 text-sm font-medium"
                     >
                       {t('common.delete')}
                     </button>
-
                   </div>
-
                 </div>
 
                 {/* Stats */}
                 <div className="mt-5 grid grid-cols-2 gap-3">
-
                   <div className="bg-gray-50 rounded-xl p-4">
                     <p className="text-xs text-gray-400 mb-1">
-                      Prenotazioni Totali
+                      {t('customers.totalBookings')}
                     </p>
-
                     <p className="text-2xl font-bold text-gray-800">
                       {customerBookings.length}
                     </p>
@@ -294,130 +224,70 @@ export default function CustomersPage() {
 
                   <div className="bg-gray-50 rounded-xl p-4">
                     <p className="text-xs text-gray-400 mb-1">
-                      Ultima Prenotazione
+                      {t('customers.lastBooking')}
                     </p>
-
                     <p className="text-sm font-semibold text-gray-700">
-                      {lastBooking
-                        ? formatDate(lastBooking.startTime)
-                        : '-'}
+                      {lastBooking ? formatDate(lastBooking.startTime) : '-'}
                     </p>
                   </div>
-
                 </div>
 
                 {/* Notes */}
                 {customer.notes && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-xl">
                     <p className="text-xs font-semibold text-blue-700 mb-1">
-                      Note Cliente
+                      {t('customers.customerNotes')}
                     </p>
-
-                    <p className="text-sm text-blue-800">
-                      {customer.notes}
-                    </p>
+                    <p className="text-sm text-blue-800">{customer.notes}</p>
                   </div>
                 )}
 
                 {/* Storico prenotazioni */}
                 {customerBookings.length > 0 && (
                   <div className="mt-5">
-
                     <p className="text-sm font-semibold text-gray-700 mb-3">
-                      Storico Prenotazioni
+                      {t('customers.bookingHistory')}
                     </p>
-
                     <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-
                       {customerBookings
-                        .sort((a, b) =>
-                          new Date(b.startTime) - new Date(a.startTime)
-                        )
+                        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
                         .map(booking => (
-
                           <div
                             key={booking.id}
-                            className="
-                              flex items-center justify-between
-                              bg-gray-50
-                              rounded-xl
-                              px-3 py-2
-                            "
+                            className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2"
                           >
-
                             <div>
                               <p className="text-sm font-medium text-gray-700">
                                 {formatDate(booking.startTime)}
                               </p>
-
                               <p className="text-xs text-gray-400">
-                                {booking.status}
+                                {t(`bookings.statuses.${booking.status}`)}
                               </p>
                             </div>
-
-                            <div className="
-                              text-xs
-                              px-2 py-1
-                              rounded-full
-                              bg-blue-100
-                              text-blue-700
-                              font-medium
-                            ">
+                            <div className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
                               #{booking.id}
                             </div>
-
                           </div>
-
                         ))}
-
                     </div>
-
                   </div>
                 )}
-
               </div>
             )
           })}
-
         </div>
       )}
 
       {/* Modal */}
       {showForm && (
-        <div className="
-          fixed inset-0
-          bg-black/50
-          flex items-center justify-center
-          z-50
-          p-4
-        ">
-
-          <div className="
-            bg-white
-            rounded-2xl
-            shadow-2xl
-            w-full
-            max-w-md
-            p-6
-            space-y-4
-          ">
-
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-xl font-bold text-gray-800">
-              {editingCustomer
-                ? 'Modifica Cliente'
-                : 'Nuovo Cliente'}
+              {editingCustomer ? t('customers.editTitle') : t('customers.newTitle')}
             </h2>
 
             {error && (
-              <div className="
-                p-3
-                bg-red-50
-                border
-                border-red-200
-                rounded-xl
-                text-red-600
-                text-sm
-              ">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
                 {error}
               </div>
             )}
@@ -425,143 +295,77 @@ export default function CustomersPage() {
             {/* Nome */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome *
+                {t('customers.name')} *
               </label>
-
               <input
                 type="text"
                 value={form.name}
                 onChange={e => handleChange('name', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('customers.namePlaceholder')}
               />
             </div>
 
             {/* Cognome */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cognome
+                {t('customers.surname')}
               </label>
-
               <input
                 type="text"
                 value={form.surname}
                 onChange={e => handleChange('surname', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('customers.surnamePlaceholder')}
               />
             </div>
 
             {/* Telefono */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefono *
+                {t('customers.phone')} *
               </label>
-
               <input
                 type="tel"
                 value={form.phone}
                 onChange={e => handleChange('phone', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('customers.phonePlaceholder')}
               />
             </div>
 
             {/* Note */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Note
+                {t('customers.notes')}
               </label>
-
               <textarea
                 rows={3}
                 value={form.notes}
                 onChange={e => handleChange('notes', e.target.value)}
-                className="
-                  w-full
-                  px-4 py-3
-                  border border-gray-200
-                  rounded-xl
-                  bg-gray-50
-                  text-sm
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-blue-500
-                "
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('customers.notesPlaceholder')}
               />
             </div>
 
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
-
               <button
                 onClick={() => setShowForm(false)}
-                className="
-                  flex-1
-                  py-3
-                  border border-gray-200
-                  rounded-xl
-                  text-sm
-                  font-medium
-                  text-gray-600
-                  hover:bg-gray-50
-                  transition
-                "
+                className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
               >
                 {t('common.cancel')}
               </button>
-
               <button
                 onClick={handleSave}
-                className="
-                  flex-1
-                  py-3
-                  bg-blue-600
-                  text-white
-                  rounded-xl
-                  text-sm
-                  font-medium
-                  hover:bg-blue-700
-                  transition
-                "
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
               >
                 {t('common.save')}
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
   )
 }

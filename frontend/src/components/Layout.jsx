@@ -57,10 +57,9 @@ export default function Layout() {
         </svg>
       )
     },
-    // NUOVO: Barbieri
     {
-      path: '/barber',
-      label: t('nav.barber', 'Barbieri'),  // Fallback 'Barbieri' se la chiave i18n manca
+      path: '/barbers',
+      label: t('nav.barbers'), 
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 

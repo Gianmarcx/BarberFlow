@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import DashboardPage from './DashboardPage'
@@ -28,13 +27,12 @@ function AppRoutes() {
         </PrivateRoute>
       }>
         <Route index element={<DashboardPage />} />
-        <Route path="home" element={<HomePage />} />
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="services" element={<ServicesPage />} />
         
-        {/* ✅ RIGA AGGIUNTA: Qui colleghiamo il percorso /barber alla pagina */}
-        <Route path="barber" element={<BarberPage />} />
+        
+        <Route path="barbers" element={<BarberPage />} />
         
         <Route path="schedule" element={<SchedulePage />} />
       </Route>

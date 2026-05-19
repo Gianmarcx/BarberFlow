@@ -25,7 +25,6 @@ export default function BarberPage() {
     loadBarbers()
   }, [])
 
-  // ESC to close modal
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === 'Escape') setShowForm(false)
@@ -73,7 +72,7 @@ export default function BarberPage() {
 
   const handleSave = async () => {
     if (!form.name.trim()) {
-      setError('Il nome è obbligatorio')
+      setError(t('barbers.nameRequired'))
       return
     }
 
@@ -101,7 +100,7 @@ export default function BarberPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm(t('barbers.deleteConfirm', 'Vuoi eliminare questo barbiere?'))) return
+    if (!window.confirm(t('barbers.deleteConfirm'))) return
 
     try {
       await api.delete(`/api/barbers/${id}`)
@@ -113,16 +112,14 @@ export default function BarberPage() {
 
   return (
     <div className="space-y-4">
-
       {/* Header */}
       <div className="flex items-center justify-between">
-
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
-            {t('barbers.title', 'Barbieri')}
+            {t('barbers.title')}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            {t('barbers.subtitle', 'Gestisci il team del salone')}
+            {t('barbers.subtitle')}
           </p>
         </div>
 
@@ -131,32 +128,25 @@ export default function BarberPage() {
           onClick={openNew}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow"
         >
-          Nuovo Barbiere
+          {t('barbers.new')}
         </button>
-
       </div>
 
       {/* Lista barbieri */}
       {loading ? (
-        <p className="text-gray-400 animate-pulse">
-          {t('common.loading')}...
-        </p>
+        <p className="text-gray-400 animate-pulse">{t('common.loading')}</p>
       ) : barbers.length === 0 ? (
         <div className="bg-white rounded-2xl shadow p-12 text-center">
           <p className="text-5xl mb-4">✂️</p>
-          <p className="text-gray-400">
-            {t('barbers.empty', 'Nessun barbiere registrato')}
-          </p>
+          <p className="text-gray-400">{t('barbers.empty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-
           {barbers.map(barber => (
             <div
               key={barber.id}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition"
             >
-              
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-gray-800">{barber.name}</h2>
@@ -182,13 +172,11 @@ export default function BarberPage() {
               </div>
 
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
-
                 <div className="text-xs text-gray-400">
                   ID #{barber.id}
                 </div>
 
                 <div className="flex items-center gap-3">
-
                   <button
                     type="button"
                     onClick={() => openEdit(barber)}
@@ -196,7 +184,6 @@ export default function BarberPage() {
                   >
                     {t('common.edit')}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => handleDelete(barber.id)}
@@ -204,13 +191,10 @@ export default function BarberPage() {
                   >
                     {t('common.delete')}
                   </button>
-
                 </div>
               </div>
-
             </div>
           ))}
-
         </div>
       )}
 
@@ -220,14 +204,12 @@ export default function BarberPage() {
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setShowForm(false)}
         >
-
           <div
             className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-
             <h2 className="text-xl font-bold text-gray-800">
-              {editingBarber ? t('barbers.editTitle', 'Modifica Barbiere') : t('barbers.newTitle', 'Nuovo Barbiere')}
+              {editingBarber ? t('barbers.editTitle') : t('barbers.newTitle')}
             </h2>
 
             {error && (
@@ -239,62 +221,61 @@ export default function BarberPage() {
             {/* Nome */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome *
+                {t('barbers.name')} *
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={e => handleChange('name', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="es. Mario Rossi"
+                placeholder={t('barbers.namePlaceholder')}
               />
             </div>
 
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                {t('barbers.email')}
               </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={e => handleChange('email', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="mario@example.com"
+                placeholder={t('barbers.emailPlaceholder')}
               />
             </div>
 
             {/* Telefono */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefono
+                {t('barbers.phone')}
               </label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={e => handleChange('phone', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="+39 333 1234567"
+                placeholder={t('barbers.phonePlaceholder')}
               />
             </div>
 
             {/* Specializzazione */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Specializzazione
+                {t('barbers.specialization')}
               </label>
               <input
                 type="text"
                 value={form.specialization}
                 onChange={e => handleChange('specialization', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="es. Fade, Barba, Colori"
+                placeholder={t('barbers.specializationPlaceholder')}
               />
             </div>
 
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
-
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
@@ -302,7 +283,6 @@ export default function BarberPage() {
               >
                 {t('common.cancel')}
               </button>
-
               <button
                 type="button"
                 onClick={handleSave}
@@ -310,14 +290,10 @@ export default function BarberPage() {
               >
                 {t('common.save')}
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
-
     </div>
   )
 }

@@ -39,28 +39,31 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS attivato
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                // Endpoint pubblici
+                .requestMatchers(
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/api-docs/**"
+                ).permitAll()
+                // Tutte le altre richieste richiedono autenticazione
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(sess -> sess
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -83,15 +86,45 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ BEAN CORS CONFIGURATION (Sostituisce il vecchio CorsConfig.java)
+    /**
+     * Configurazione CORS per produzione e sviluppo.
+     * Per produzione: sostituire http://localhost:5173 con il dominio del frontend.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend React
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // OPTIONS è fondamentale per il preflight
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // Necessario per inviare il JWT
-        config.setMaxAge(3600L); // Cache della preflight per 1 ora
+        
+        // Origini consentite (usa variabile d'ambiente per produzione)
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        if (frontendUrl != null && !frontendUrl.isEmpty()) {
+            config.setAllowedOrigins(List.of(frontendUrl));
+        } else {
+            // Default per sviluppo locale
+            config.setAllowedOrigins(List.of("http://localhost:5173"));
+        }
+        
+        // Metodi HTTP consentiti
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Headers consentiti (specifici, non wildcard "*")
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "X-Requested-With",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+        
+        // Headers esposti al frontend
+        config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
+        
+        // Credenziali (necessarie per JWT)
+        config.setAllowCredentials(true);
+        
+        // Cache preflight: 1 ora
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

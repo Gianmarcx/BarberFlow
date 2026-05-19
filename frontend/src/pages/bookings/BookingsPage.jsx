@@ -214,7 +214,7 @@ export default function BookingsPage() {
       ) : bookings.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-12 text-center">
           <p className="text-5xl mb-4">📅</p>
-          <p className="text-gray-400">{t('dashboard.noBookings')}</p>
+          <p className="text-gray-400">{t('bookings.empty')}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -399,7 +399,7 @@ export default function BookingsPage() {
                 onChange={e => handleFormChange('notes', e.target.value)}
                 rows={2}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Note opzionali..."
+                placeholder={t('bookings.notesPlaceholder')}
               />
             </div>
 

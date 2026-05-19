@@ -7,12 +7,11 @@ const DAYS = [
   'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'
 ]
 
-// ✅ Sabato incluso nei giorni lavorativi
 const WORKING_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
 
 const DEFAULT_OPEN = '08:30'
-const DEFAULT_CLOSE_WEEKDAY = '20:30'  // ← Lun-Ven
-const DEFAULT_CLOSE_SATURDAY = '19:00' // ← Sabato
+const DEFAULT_CLOSE_WEEKDAY = '20:30'
+const DEFAULT_CLOSE_SATURDAY = '19:00'
 
 export default function SchedulePage() {
   const { t } = useTranslation()
@@ -77,7 +76,7 @@ export default function SchedulePage() {
 
   const handleSave = async () => {
     if (!form.dayOfWeek || !form.openTime || !form.closeTime) {
-      setError('Compila tutti i campi obbligatori')
+      setError(t('schedule.requiredFields'))
       return
     }
 
@@ -94,9 +93,12 @@ export default function SchedulePage() {
     }
   }
 
-  // ✅ FUNZIONE BULK: Imposta orari lavorativi (Lun-Ven 08:30-20:30, Sab 08:30-19:00)
   const setupWorkingDays = async () => {
-    if (!window.confirm(`Impostare orari lavorativi default?\n\nLun-Ven: ${DEFAULT_OPEN} → ${DEFAULT_CLOSE_WEEKDAY}\nSabato: ${DEFAULT_OPEN} → ${DEFAULT_CLOSE_SATURDAY}`)) {
+    if (!window.confirm(t('schedule.setupWorkingDaysConfirm', {
+      weekdayOpen: DEFAULT_OPEN,
+      weekdayClose: DEFAULT_CLOSE_WEEKDAY,
+      saturdayClose: DEFAULT_CLOSE_SATURDAY
+    }))) {
       return
     }
 
@@ -108,11 +110,10 @@ export default function SchedulePage() {
       const daysToCreate = WORKING_DAYS.filter(day => !configuredDays.includes(day))
 
       if (daysToCreate.length === 0) {
-        alert('✅ Tutti i giorni lavorativi sono già configurati!')
+        alert(t('schedule.alreadyConfigured'))
         return
       }
 
-      // ✅ Crea promesse con orario di chiusura dinamico
       const promises = daysToCreate.map(day => {
         const closeTime = day === 'SATURDAY' ? DEFAULT_CLOSE_SATURDAY : DEFAULT_CLOSE_WEEKDAY
         
@@ -124,18 +125,18 @@ export default function SchedulePage() {
       })
 
       await Promise.all(promises)
-      alert(`✅ Configurati ${daysToCreate.length} giorni lavorativi!\nLun-Ven: 08:30-20:30\nSabato: 08:30-19:00`)
+      alert(t('schedule.configuredSuccess', { count: daysToCreate.length }))
       loadSchedules()
     } catch (err) {
       console.error(err)
-      setError(err.response?.data?.message || 'Errore durante la configurazione bulk')
+      setError(err.response?.data?.message || t('errors.serverError'))
     } finally {
       setBulkLoading(false)
     }
   }
 
   const handleDelete = async (dayOfWeek) => {
-    if (!window.confirm(t('schedule.delete') + '?')) return
+    if (!window.confirm(t('schedule.deleteConfirm'))) return
     try {
       await api.delete(`/api/schedules/${dayOfWeek}`)
       loadSchedules()
@@ -149,7 +150,6 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-4">
-
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
@@ -157,12 +157,12 @@ export default function SchedulePage() {
             {t('schedule.title')}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Configura i giorni e gli orari lavorativi
+            {t('schedule.subtitle')}
           </p>
         </div>
 
         <div className="flex gap-2">
-          {/* ✅ PULSANTE BULK */}
+          {/* Pulsante BULK */}
           <button
             onClick={setupWorkingDays}
             disabled={bulkLoading}
@@ -178,10 +178,10 @@ export default function SchedulePage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
-                Configurazione...
+                {t('schedule.configuring')}
               </>
             ) : (
-              <>⚡ Imposta orari lavorativi</>
+              <>⚡ {t('schedule.setupWorkingDays')}</>
             )}
           </button>
 
@@ -194,7 +194,7 @@ export default function SchedulePage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Aggiungi Giorno
+              {t('schedule.addDay')}
             </button>
           )}
         </div>
@@ -205,7 +205,6 @@ export default function SchedulePage() {
         <p className="text-gray-400 animate-pulse">{t('common.loading')}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
           {DAYS.map(day => {
             const schedule = schedules.find(s => s.dayOfWeek === day)
             const isConfigured = !!schedule
@@ -227,21 +226,21 @@ export default function SchedulePage() {
 
                   {isConfigured ? (
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                      Aperto
+                      {t('schedule.open')}
                     </span>
                   ) : (
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                       isWorkingDay 
                         ? day === 'SATURDAY'
-                          ? 'bg-purple-100 text-purple-700'  // Sabato in viola
-                          : 'bg-amber-100 text-amber-700'    // Lun-Ven in ambra
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-amber-100 text-amber-700'
                         : 'bg-gray-100 text-gray-400'
                     }`}>
                       {isWorkingDay 
                         ? day === 'SATURDAY' 
-                          ? '08:30-19:00'   // Badge con orario Sabato
-                          : '08:30-20:30'   // Badge con orario Lun-Ven
-                        : 'Chiuso'}
+                          ? '08:30-19:00'
+                          : '08:30-20:30'
+                        : t('schedule.closed')}
                     </span>
                   )}
                 </div>
@@ -278,14 +277,13 @@ export default function SchedulePage() {
                       }}
                       className="text-sm text-blue-500 hover:text-blue-700 font-medium"
                     >
-                      + Configura orario
+                      + {t('schedule.configure')}
                     </button>
                   </div>
                 )}
               </div>
             )
           })}
-
         </div>
       )}
 
@@ -300,7 +298,7 @@ export default function SchedulePage() {
             onClick={e => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold text-gray-800">
-              {editingSchedule ? t('common.edit') : 'Configura Orario'} — {t(`schedule.days.${form.dayOfWeek}`)}
+              {editingSchedule ? t('common.edit') : t('schedule.configure')} — {t(`schedule.days.${form.dayOfWeek}`)}
             </h2>
 
             {error && (
@@ -319,7 +317,7 @@ export default function SchedulePage() {
                   onChange={e => handleChange('dayOfWeek', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">-- Seleziona giorno --</option>
+                  <option value="">-- {t('schedule.selectDay')} --</option>
                   {availableDays.map(d => (
                     <option key={d} value={d}>{t(`schedule.days.${d}`)}</option>
                   ))}
@@ -368,11 +366,9 @@ export default function SchedulePage() {
                 {t('common.save')}
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   )
 }

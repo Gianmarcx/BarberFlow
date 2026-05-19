@@ -1,9 +1,25 @@
+# ===================================================================
+# BarberFlow - Backend (.gitignore)
+# Protegge secret, file locali e build artifacts
+# ===================================================================
+
+# --- Environment & Secrets (CRITICO) ---
+.env
+*.env
+.env.local
+.env.production
+application-local.properties
+application-prod.properties
+!application.properties.example
+
+# --- Build & Compilation ---
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# --- IDE ---
 ### STS ###
 .apt_generated
 .classpath
@@ -18,6 +34,7 @@ target/
 *.iws
 *.iml
 *.ipr
+out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,3 +48,35 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# --- Logs & Temp ---
+*.log
+logs/
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Database & Data (se locale) ---
+*.sql
+*.dump
+!src/main/resources/db/migration/*.sql  # ← Mantieni le migrazioni Flyway!
+
+# --- Secrets & Keys ---
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+keystore/
+
+# --- Docker (opzionale, se non vuoi committare config locali) ---
+docker-compose.override.yml
+!.dockerignore

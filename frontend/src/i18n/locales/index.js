@@ -18,10 +18,11 @@ i18n
       fr: { translation: fr }
     },
     fallbackLng: 'en',
-    lng: 'en',
+    // ✅ RIMOSSO: lng: 'en' (che bloccava il rilevamento automatico)
+    
     detection: {
-      order: ['navigator'],
-      caches: []
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'] // 
     },
     interpolation: {
       escapeValue: false
@@ -29,3 +30,7 @@ i18n
   })
 
 export default i18n
+
+if (import.meta.env.DEV){
+  window.i18n = i18n
+}

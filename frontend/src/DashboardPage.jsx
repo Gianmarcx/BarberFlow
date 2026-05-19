@@ -41,7 +41,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
         <button
           onClick={() => navigate('/bookings')}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow">
           <p className="text-2xl font-bold text-gray-800">{bookings.length}</p>
-          <p className="text-sm text-gray-500">Total Today</p>
+          <p className="text-sm text-gray-500">{t('dashboard.totalToday')}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow">
           <p className="text-2xl font-bold text-green-600">{bookings.filter(b => b.status === 'CONFIRMED').length}</p>
