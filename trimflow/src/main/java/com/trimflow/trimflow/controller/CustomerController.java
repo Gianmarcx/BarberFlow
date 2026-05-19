@@ -1,0 +1,59 @@
+package com.trimflow.trimflow.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import com.trimflow.trimflow.dto.CustomerDTO;
+import com.trimflow.trimflow.service.CustomerService;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/customers")
+public class CustomerController {
+
+    private final CustomerService customerService;
+
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
+    }
+
+    @PostMapping
+    public ResponseEntity<CustomerDTO> create(
+            @RequestBody CustomerDTO dto,
+            Authentication auth) {          
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(customerService.createCustomer(dto, auth.getName()));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CustomerDTO>> getAll(Authentication auth) {
+        return ResponseEntity.ok(customerService.getCustomers(auth.getName()));
+    }
+
+    @GetMapping("/{id}")                    // ✅ aggiunto endpoint mancante
+    public ResponseEntity<CustomerDTO> getById(
+            @PathVariable Long id,
+            Authentication auth) {
+        return ResponseEntity.ok(customerService.findById(id, auth.getName()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerDTO> update(
+            @PathVariable Long id,
+            @RequestBody CustomerDTO dto,
+            Authentication auth) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, dto, auth.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            Authentication auth) {
+        customerService.deleteCustomer(id, auth.getName());
+        return ResponseEntity.noContent().build();
+    }
+}

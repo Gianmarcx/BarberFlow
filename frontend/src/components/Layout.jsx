@@ -131,7 +131,7 @@ export default function Layout() {
                   drop-shadow-md
                 "
               >
-                BarberFlow
+                TrimFlow
               </h1>
 
               <span

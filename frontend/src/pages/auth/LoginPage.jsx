@@ -50,7 +50,7 @@ export default function LoginPage() {
           >
             <img
               src="/logo.png"
-              alt="BarberFlow"
+              alt="TrimFlow"
               className="h-12 mb-4 drop-shadow-md"
             />
             <h1 className="text-3xl font-extrabold leading-tight">
