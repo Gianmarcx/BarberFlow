@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
 
-const HOUR_HEIGHT = 60
+const HOUR_HEIGHT = 130
 const START_HOUR = 8
 const END_HOUR = 21
 
 const statusColors = {
-  PENDING: 'bg-yellow-100 border-yellow-400 text-yellow-800',
-  CONFIRMED: 'bg-green-100 border-green-400 text-green-800',
-  CANCELLED: 'bg-red-100 border-red-400 text-red-600 line-through',
-  COMPLETED: 'bg-gray-100 border-gray-400 text-gray-600'
+  PENDING: 'bg-yellow-100 border-yellow-400 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-600 dark:text-yellow-400',
+  CONFIRMED: 'bg-green-100 border-green-400 text-green-800 dark:bg-green-900/30 dark:border-green-600 dark:text-green-400',
+  CANCELLED: 'bg-red-100 border-red-400 text-red-600 line-through dark:bg-red-900/30 dark:border-red-600 dark:text-red-400',
+  COMPLETED: 'bg-gray-100 border-gray-400 text-gray-600 dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300'
 }
 
 function getWeekDays(date) {
@@ -45,6 +45,8 @@ function getHeight(startTime, endTime) {
 export default function BookingsPage() {
   const { t } = useTranslation()
 
+  const [hoveredBooking, setHoveredBooking] = useState(null)
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 })
   const [bookings, setBookings] = useState([])
   const [customers, setCustomers] = useState([])
   const [services, setServices] = useState([])
@@ -73,18 +75,10 @@ export default function BookingsPage() {
     notes: ''
   })
 
+  useEffect(() => { loadAll() }, [])
+  useEffect(() => { setWeekDays(getWeekDays(new Date(currentDate))) }, [currentDate])
   useEffect(() => {
-    loadAll()
-  }, [])
-
-  useEffect(() => {
-    setWeekDays(getWeekDays(new Date(currentDate)))
-  }, [currentDate])
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
   }, [])
 
   const loadAll = async () => {
@@ -176,7 +170,7 @@ export default function BookingsPage() {
 
   const handleSave = async () => {
     if (!form.customerName || !form.serviceId || !form.date || !form.startTime || !form.barberId) {
-      setError('Compila tutti i campi obbligatori')
+      setError(t('errors.required'))
       return
     }
     try {
@@ -253,11 +247,7 @@ export default function BookingsPage() {
     })
   }
 
-  const hours = Array.from(
-    { length: END_HOUR - START_HOUR },
-    (_, i) => START_HOUR + i
-  )
-
+  const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
   const dayNames = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
   const formatWeekRange = () => {
@@ -267,52 +257,46 @@ export default function BookingsPage() {
     return `${first.getDate()} ${first.toLocaleString('en', { month: 'short' })} – ${last.getDate()} ${last.toLocaleString('en', { month: 'short' })} ${last.getFullYear()}`
   }
 
-  if (loading) return <p className="text-gray-400">{t('common.loading')}</p>
+  if (loading) return <p className="text-gray-400 dark:text-gray-500">{t('common.loading')}</p>
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] bg-white rounded-2xl shadow overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 overflow-hidden transition-colors duration-200">
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <button
-            onClick={goToToday}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-          >
-            Today
+          <button onClick={goToToday} className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            {t('bookings.today')}
           </button>
           <div className="flex items-center gap-1">
-            <button onClick={prevWeek} className="p-1.5 rounded-lg hover:bg-gray-100 transition">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={prevWeek} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button onClick={nextWeek} className="p-1.5 rounded-lg hover:bg-gray-100 transition">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={nextWeek} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
-          <span className="text-base font-semibold text-gray-800">
-            {formatWeekRange()}
-          </span>
+          <span className="text-base font-semibold text-gray-800 dark:text-white">{formatWeekRange()}</span>
         </div>
 
         <div className="flex items-center gap-3">
           <select
             value={selectedBarber}
             onChange={e => setSelectedBarber(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">All barbers</option>
+            <option value="all">{t('bookings.allBarbers')}</option>
             {barbers.map(b => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
           </select>
-
           <button
             onClick={() => openNew()}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -323,15 +307,13 @@ export default function BookingsPage() {
       </div>
 
       {/* Header giorni */}
-      <div className="flex border-b border-gray-100">
+      <div className="flex border-b border-gray-100 dark:border-gray-700">
         <div className="w-16 flex-shrink-0" />
         {weekDays.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-3 border-l border-gray-100">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-              {dayNames[i]}
-            </p>
+          <div key={i} className="flex-1 text-center py-3 border-l border-gray-100 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">{t(`schedule.days.${dayNames[i]}`)}</p>
             <p className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
-              isToday(day) ? 'bg-blue-600 text-white' : 'text-gray-800'
+              isToday(day) ? 'bg-blue-600 text-white' : 'text-gray-800 dark:text-white'
             }`}>
               {day.getDate()}
             </p>
@@ -351,7 +333,7 @@ export default function BookingsPage() {
                 className="absolute w-full text-right pr-2"
                 style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT - 8}px` }}
               >
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
                 </span>
               </div>
@@ -366,16 +348,11 @@ export default function BookingsPage() {
             return (
               <div
                 key={i}
-                className="flex-1 border-l border-gray-100 relative cursor-pointer"
+                className="flex-1 border-l border-gray-100 dark:border-gray-700 relative cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors"
                 onClick={() => openNew(dateStr, '')}
               >
-                {/* Righe orarie */}
                 {hours.map(hour => (
-                  <div
-                    key={hour}
-                    className="border-t border-gray-100"
-                    style={{ height: `${HOUR_HEIGHT}px` }}
-                  />
+                  <div key={hour} className="border-t border-gray-100 dark:border-gray-700" style={{ height: `${HOUR_HEIGHT}px` }} />
                 ))}
 
                 {/* Linea ora corrente */}
@@ -403,7 +380,6 @@ export default function BookingsPage() {
                   const colorClass = statusColors[booking.status] || statusColors.PENDING
                   const startTime = booking.startTime?.split('T')[1]?.slice(0, 5)
                   const endTime = booking.endTime?.split('T')[1]?.slice(0, 5)
-                  
 
                   return (
                     <div
@@ -411,39 +387,30 @@ export default function BookingsPage() {
                       className={`absolute left-1 right-1 rounded-lg border-l-4 px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition ${colorClass}`}
                       style={{ top: `${top}px`, height: `${Math.max(height, 24)}px` }}
                       onClick={e => openEdit(booking, e)}
+                      onMouseEnter={(e) => {
+                        setHoveredBooking(booking)
+                        setHoverPos({ x: e.clientX, y: e.clientY })
+                      }}
+                      onMouseMove={(e) => setHoverPos({ x: e.clientX, y: e.clientY })}
+                      onMouseLeave={() => setHoveredBooking(null)}
                     >
-                      {/* Orario + Nome — sempre visibile */}
                       <p className="text-xs font-bold leading-tight truncate">
                         {startTime} - {endTime} · {getCustomerName(booking.customerId)}
                       </p>
-
-                      {/* Servizio */}
-                      {height > 30 && (
-                        <p className="text-xs leading-tight truncate opacity-80">
-                          ✂️ {getServiceName(booking.serviceId)}
-                        </p>
-                      )}
-
-                      {/* Barbiere */}
-                      {height > 45 && (
-                        <p className="text-xs leading-tight truncate opacity-70">
-                          👤 {getBarberName(booking.barberId)}
-                        </p>
-                      )}
-
-                      {/* Note */}
-                      {height > 60 && booking.notes && (
+                      <p className="text-xs leading-tight truncate opacity-80">
+                        ✂️ {getServiceName(booking.serviceId)}
+                      </p>
+                      <p className="text-xs leading-tight truncate opacity-70">
+                        👤 {getBarberName(booking.barberId)}
+                      </p>
+                      {booking.notes && (
                         <p className="text-xs leading-tight truncate opacity-60 italic">
                           📝 {booking.notes}
                         </p>
                       )}
-
-                      {/* Status */}
-                      {height > 75 && (
-                        <span className="text-xs font-medium opacity-80">
-                          {t(`bookings.statuses.${booking.status}`)}
-                        </span>
-                      )}
+                      <span className="text-xs font-medium opacity-80">
+                        {t(`bookings.statuses.${booking.status}`)}
+                      </span>
                     </div>
                   )
                 })}
@@ -453,39 +420,68 @@ export default function BookingsPage() {
         </div>
       </div>
 
+      {/* Tooltip preview */}
+      {hoveredBooking && (
+        <div
+          className="fixed z-50 bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 w-64 pointer-events-none transition-colors duration-200"
+          style={{
+            left: hoverPos.x + 16,
+            top: hoverPos.y - 8,
+            transform: hoverPos.x > window.innerWidth - 280 ? 'translateX(-110%)' : 'none'
+          }}
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-bold text-gray-800 dark:text-white text-sm truncate">
+                {getCustomerName(hoveredBooking.customerId)}
+              </p>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${statusColors[hoveredBooking.status]}`}>
+                {t(`bookings.statuses.${hoveredBooking.status}`)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+              <p>🕐 {hoveredBooking.startTime?.split('T')[1]?.slice(0, 5)} - {hoveredBooking.endTime?.split('T')[1]?.slice(0, 5)}</p>
+              <p>✂️ {getServiceName(hoveredBooking.serviceId)}</p>
+              <p>👤 {getBarberName(hoveredBooking.barberId)}</p>
+              {hoveredBooking.notes && <p>📝 {hoveredBooking.notes}</p>}
+              {hoveredBooking.priceSnapshot && <p>💶 €{hoveredBooking.priceSnapshot}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal form */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-700/50 w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto transition-colors duration-200">
 
-            <h2 className="text-xl font-bold text-gray-800">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
               {editingBooking ? t('common.edit') : t('bookings.new')}
             </h2>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
 
-            {/* Cliente — solo nuova prenotazione */}
             {!editingBooking && (
-              <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm font-semibold text-gray-700">👤 {t('customers.title')}</p>
+              <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">👤 {t('customers.title')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
                     value={form.customerName}
                     onChange={e => handleFormChange('customerName', e.target.value)}
                     placeholder={t('customers.name') + ' *'}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     type="text"
                     value={form.customerSurname}
                     onChange={e => handleFormChange('customerSurname', e.target.value)}
                     placeholder={t('customers.surname')}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <input
@@ -493,66 +489,52 @@ export default function BookingsPage() {
                   value={form.customerPhone}
                   onChange={e => handleFormChange('customerPhone', e.target.value)}
                   placeholder={t('customers.phone')}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}
 
-            {/* Barbiere */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Barber *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.barber')} *</label>
               <select
                 value={form.barberId}
                 onChange={e => handleFormChange('barberId', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">-- Select barber --</option>
+                <option value="">-- {t('bookings.selectBarber')} --</option>
                 {barbers.map(b => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </select>
             </div>
 
-            {/* Servizio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('bookings.service')} *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.service')} *</label>
               <select
                 value={form.serviceId}
                 onChange={e => handleFormChange('serviceId', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- {t('bookings.service')} --</option>
                 {services.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.duration} min - €{s.price})
-                  </option>
+                  <option key={s.id} value={s.id}>{s.name} ({s.duration} min - €{s.price})</option>
                 ))}
               </select>
             </div>
 
-            {/* Data */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('bookings.date')} *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.date')} *</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={e => handleFormChange('date', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            {/* Slot disponibili */}
             {availableSlots.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('bookings.time')} *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('bookings.time')} *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {availableSlots.map(slot => (
                     <button
@@ -561,7 +543,7 @@ export default function BookingsPage() {
                       className={`py-2 rounded-lg text-sm font-medium transition ${
                         form.startTime === slot.slice(0, 5)
                           ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       {slot.slice(0, 5)}
@@ -572,21 +554,16 @@ export default function BookingsPage() {
             )}
 
             {availableSlots.length === 0 && form.date && form.serviceId && form.barberId && (
-              <p className="text-sm text-red-500">
-                Nessuno slot disponibile per questa data
-              </p>
+              <p className="text-sm text-red-500 dark:text-red-400">{t('bookings.noSlotsAvailable')}</p>
             )}
 
-            {/* Status — solo modifica */}
             {editingBooking && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('bookings.status')}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.status')}</label>
                 <select
                   value={form.status}
                   onChange={e => handleFormChange('status', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'].map(s => (
                     <option key={s} value={s}>{t(`bookings.statuses.${s}`)}</option>
@@ -595,45 +572,40 @@ export default function BookingsPage() {
               </div>
             )}
 
-            {/* Note */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('bookings.notes')}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.notes')}</label>
               <textarea
                 value={form.notes}
                 onChange={e => handleFormChange('notes', e.target.value)}
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Note opzionali..."
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('bookings.notesPlaceholder')}
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-800 transition disabled:opacity-50"
               >
                 {saving ? t('common.loading') : t('common.save')}
               </button>
             </div>
 
-            {/* Delete — solo modifica */}
             {editingBooking && (
               <button
                 onClick={(e) => {
                   handleDelete(editingBooking.id, e)
                   setShowForm(false)
                 }}
-                className="w-full py-2 text-red-500 hover:text-red-700 text-sm font-medium transition"
+                className="w-full py-2 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium transition"
               >
                 {t('common.delete')}
               </button>

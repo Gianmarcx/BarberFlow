@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Transizioni fluide */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Escludi elementi che non dovrebbero animare */
+img, svg, canvas, path {
+  transition: none !important;
+}

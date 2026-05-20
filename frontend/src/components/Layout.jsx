@@ -1,10 +1,12 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
 export default function Layout() {
   const { t } = useTranslation()
   const { logout } = useAuth()
+  const { darkMode, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -59,7 +61,7 @@ export default function Layout() {
     },
     {
       path: '/barbers',
-      label: t('nav.barbers'), 
+      label: t('nav.barbers'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
@@ -84,31 +86,32 @@ export default function Layout() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    // ✅ Wrapper principale: usa le classi Tailwind standard. 
+    // Il ThemeContext aggiunge la classe .dark all'elemento <html>, 
+    // quindi dark:bg-gray-900 funzionerà automaticamente.
+    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
 
-      {/* Sidebar */}
-      <aside
-        className="
-          w-64
-          text-white
-          flex
-          flex-col
-          bg-gradient-to-br
-          from-[#0a2a43]
-          via-[#133c5a]
-          to-[#b92b27]
-          shadow-2xl
-        "
-      >
+      {/* Sidebar - MANTIENI IL GRADIENTE ORIGINALE (Hardcoded) */}
+      <aside className="
+        w-64
+        text-white
+        flex
+        flex-col
+        bg-gradient-to-br
+        from-[#0a2a43]
+        via-[#133c5a]
+        to-[#b92b27]
+        shadow-2xl
+        transition-colors
+        duration-200
+      ">
 
         {/* Logo */}
         <div className="p-6 border-b border-white/10 backdrop-blur-sm">
-
           <div className="flex items-center justify-center gap-3 select-none">
-
             <img
               src="/logo.png"
-              alt="BarberFlow logo"
+              alt="TrimFlow logo"
               className="
                 h-15
                 w-10
@@ -119,44 +122,20 @@ export default function Layout() {
                 hover:scale-105
               "
             />
-
             <div className="flex flex-col leading-none">
-
-              <h1
-                className="
-                  text-2xl
-                  font-extrabold
-                  tracking-tight
-                  text-white
-                  drop-shadow-md
-                "
-              >
+              <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">
                 TrimFlow
               </h1>
-
-              <span
-                className="
-                  text-[11px]
-                  uppercase
-                  tracking-[0.25em]
-                  text-white/60
-                  mt-1
-                "
-              >
+              <span className="text-[11px] uppercase tracking-[0.25em] text-white/60 mt-1">
                 Management
               </span>
-
             </div>
-
           </div>
-
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
-
           {navItems.map(item => (
-
             <NavLink
               key={item.path}
               to={item.path}
@@ -178,20 +157,38 @@ export default function Layout() {
                 `
               }
             >
-
               {item.icon}
-
               <span>{item.label}</span>
-
             </NavLink>
-
           ))}
-
         </nav>
+
+        {/* Toggle Dark Mode */}
+        <div className="p-4 border-t border-white/10">
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200"
+            title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+          >
+            {darkMode ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
+                />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
+                />
+              </svg>
+            )}
+            {darkMode ? t('theme.lightMode') : t('theme.darkMode')}
+          </button>
+        </div>
 
         {/* Logout */}
         <div className="p-4 border-t border-white/10">
-
           <button
             onClick={handleLogout}
             className="
@@ -209,36 +206,20 @@ export default function Layout() {
               hover:translate-x-1
             "
           >
-
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
               />
             </svg>
-
             {t('nav.logout')}
-
           </button>
-
         </div>
-
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 p-8 overflow-auto">
-
+      {/* Main content - Eredita lo sfondo dal wrapper o imposta il suo */}
+      <main className="flex-1 p-8 overflow-auto bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
         <Outlet />
-
       </main>
-
     </div>
   )
 }

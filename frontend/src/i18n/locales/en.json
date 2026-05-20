@@ -22,7 +22,14 @@
     "title": "Today's Appointments",
     "noBookings": "No appointments today",
     "newBooking": "New Booking",
-    "totalToday": "Total Today"
+    "totalToday": "Total Today",
+    "customer": "Customer"
+  },
+  "theme": {
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
   },
   "bookings": {
     "title": "Bookings",
@@ -39,6 +46,11 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this booking?",
+    "today": "Today",
+    "allBarbers": "All barbers",
+    "selectBarber": "Select barber",
+    "barber": "Barber",
+    "noSlotsAvailable": "No slots available for this date",
     "statuses": {
       "PENDING": "Pending",
       "CONFIRMED": "Confirmed",
@@ -138,13 +150,20 @@
     "requiredFields": "Please fill in all required fields",
     "deleteConfirm": "Are you sure you want to delete this schedule?",
     "days": {
-      "MONDAY": "Monday",
-      "TUESDAY": "Tuesday",
-      "WEDNESDAY": "Wednesday",
-      "THURSDAY": "Thursday",
-      "FRIDAY": "Friday",
-      "SATURDAY": "Saturday",
-      "SUNDAY": "Sunday"
+      "MON": "Mon",
+    "TUE": "Tue",
+    "WED": "Wed",
+    "THU": "Thu",
+    "FRI": "Fri",
+    "SAT": "Sat",
+    "SUN": "Sun",
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
     }
   },
   "errors": {

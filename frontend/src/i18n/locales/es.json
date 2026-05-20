@@ -22,7 +22,14 @@
     "title": "Citas de hoy",
     "noBookings": "No hay citas hoy",
     "newBooking": "Nueva reserva",
-    "totalToday": "Total Hoy"
+    "totalToday": "Total Hoy",
+    "customer": "Cliente"
+  },
+  "theme": {
+    "darkMode": "Modo Oscuro",
+    "lightMode": "Modo Claro",
+    "switchToDark": "Cambiar a modo oscuro",
+    "switchToLight": "Cambiar a modo claro"
   },
   "bookings": {
     "title": "Reservas",
@@ -39,6 +46,11 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta reserva?",
+    "today": "Hoy",
+    "allBarbers": "Todos los barberos",
+    "selectBarber": "Seleccionar barbero",
+    "barber": "Barbero",
+    "noSlotsAvailable": "No hay slots disponibles para esta fecha",
     "statuses": {
       "PENDING": "Pendiente",
       "CONFIRMED": "Confirmada",
@@ -138,13 +150,20 @@
     "requiredFields": "Completa todos los campos obligatorios",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar este horario?",
     "days": {
-      "MONDAY": "Lunes",
-      "TUESDAY": "Martes",
-      "WEDNESDAY": "Miércoles",
-      "THURSDAY": "Jueves",
-      "FRIDAY": "Viernes",
-      "SATURDAY": "Sábado",
-      "SUNDAY": "Domingo"
+         "MON": "Lun",
+    "TUE": "Mar",
+    "WED": "Mié",
+    "THU": "Jue",
+    "FRI": "Vie",
+    "SAT": "Sáb",
+    "SUN": "Dom",
+    "MONDAY": "Lunes",
+    "TUESDAY": "Martes",
+    "WEDNESDAY": "Miércoles",
+    "THURSDAY": "Jueves",
+    "FRIDAY": "Viernes",
+    "SATURDAY": "Sábado",
+    "SUNDAY": "Domingo"
     }
   },
   "errors": {

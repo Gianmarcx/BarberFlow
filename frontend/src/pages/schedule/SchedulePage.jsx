@@ -153,10 +153,10 @@ export default function SchedulePage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
             {t('schedule.title')}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
             {t('schedule.subtitle')}
           </p>
         </div>
@@ -166,10 +166,10 @@ export default function SchedulePage() {
           <button
             onClick={setupWorkingDays}
             disabled={bulkLoading}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow dark:shadow-gray-700/50 transition ${
               bulkLoading
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                : 'bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800'
             }`}
           >
             {bulkLoading ? (
@@ -189,7 +189,7 @@ export default function SchedulePage() {
           {availableDays.length > 0 && (
             <button
               onClick={openNew}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -202,7 +202,7 @@ export default function SchedulePage() {
 
       {/* Griglia giorni settimana */}
       {loading ? (
-        <p className="text-gray-400 animate-pulse">{t('common.loading')}</p>
+        <p className="text-gray-400 dark:text-gray-500 animate-pulse">{t('common.loading')}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {DAYS.map(day => {
@@ -213,28 +213,28 @@ export default function SchedulePage() {
             return (
               <div
                 key={day}
-                className={`rounded-2xl border p-5 transition ${
+                className={`rounded-2xl border p-5 transition-colors duration-200 ${
                   isConfigured
-                    ? 'bg-white shadow-sm border-gray-100 hover:shadow-md'
-                    : 'bg-gray-50 border-dashed border-gray-200'
+                    ? 'bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/50 border-gray-100 dark:border-gray-700 hover:shadow-md dark:hover:shadow-lg'
+                    : 'bg-gray-50 dark:bg-gray-700/50 border-dashed border-gray-200 dark:border-gray-600'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-gray-800">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">
                     {t(`schedule.days.${day}`)}
                   </h2>
 
                   {isConfigured ? (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium">
                       {t('schedule.open')}
                     </span>
                   ) : (
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                       isWorkingDay 
                         ? day === 'SATURDAY'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-amber-100 text-amber-700'
-                        : 'bg-gray-100 text-gray-400'
+                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                          : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
                     }`}>
                       {isWorkingDay 
                         ? day === 'SATURDAY' 
@@ -247,20 +247,20 @@ export default function SchedulePage() {
 
                 {isConfigured ? (
                   <>
-                    <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-700 font-medium">
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-sm text-gray-700 dark:text-gray-200 font-medium transition-colors duration-200">
                       🕐 {schedule.openTime?.slice(0, 5)} → {schedule.closeTime?.slice(0, 5)}
                     </div>
 
                     <div className="flex items-center justify-end gap-3 mt-4">
                       <button
                         onClick={() => openEdit(schedule)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                       >
                         {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(day)}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium"
+                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                       >
                         {t('common.delete')}
                       </button>
@@ -275,7 +275,7 @@ export default function SchedulePage() {
                         setError('')
                         setShowForm(true)
                       }}
-                      className="text-sm text-blue-500 hover:text-blue-700 font-medium"
+                      className="text-sm text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                     >
                       + {t('schedule.configure')}
                     </button>
@@ -294,28 +294,28 @@ export default function SchedulePage() {
           onClick={() => setShowForm(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-700/50 w-full max-w-md p-6 space-y-4 transition-colors duration-200"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold text-gray-800">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
               {editingSchedule ? t('common.edit') : t('schedule.configure')} — {t(`schedule.days.${form.dayOfWeek}`)}
             </h2>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
 
             {!editingSchedule && !form.dayOfWeek && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   {t('schedule.day')} *
                 </label>
                 <select
                   value={form.dayOfWeek}
                   onChange={e => handleChange('dayOfWeek', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- {t('schedule.selectDay')} --</option>
                   {availableDays.map(d => (
@@ -327,27 +327,27 @@ export default function SchedulePage() {
 
             {/* Apertura */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 {t('schedule.open')} *
               </label>
               <input
                 type="time"
                 value={form.openTime}
                 onChange={e => handleChange('openTime', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             {/* Chiusura */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 {t('schedule.close')} *
               </label>
               <input
                 type="time"
                 value={form.closeTime}
                 onChange={e => handleChange('closeTime', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -355,13 +355,13 @@ export default function SchedulePage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-800 transition"
               >
                 {t('common.save')}
               </button>
