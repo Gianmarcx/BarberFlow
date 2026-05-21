@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
 
@@ -8,6 +8,9 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState([])
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  
+  
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [showForm, setShowForm] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState(null)
@@ -141,10 +144,32 @@ export default function CustomersPage() {
     })
   }
 
+  
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return customers
+    
+    const query = searchQuery.toLowerCase().trim()
+    
+    return customers.filter(customer => {
+      const name = (customer.name || '').toLowerCase()
+      const surname = (customer.surname || '').toLowerCase()
+      const phone = (customer.phone || '').toLowerCase()
+      const email = (customer.email || '').toLowerCase()
+      
+      return (
+        name.includes(query) ||
+        surname.includes(query) ||
+        phone.includes(query) ||
+        email.includes(query) ||
+        `${name} ${surname}`.includes(query)
+      )
+    })
+  }, [customers, searchQuery])
+
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
             {t('customers.title')}
@@ -165,19 +190,90 @@ export default function CustomersPage() {
         </button>
       </div>
 
+      {/* 🔍 Barra di ricerca */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('customers.searchPlaceholder')}
+          className="
+            w-full pl-10 pr-10 py-3 
+            bg-white dark:bg-gray-800 
+            border border-gray-200 dark:border-gray-700 
+            rounded-xl text-sm 
+            text-gray-800 dark:text-white 
+            placeholder-gray-400 dark:placeholder-gray-500
+            focus:outline-none focus:ring-2 focus:ring-blue-500
+            transition-colors duration-200
+          "
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Risultati ricerca */}
+      {searchQuery && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {t('customers.searchResults', { 
+            count: filteredCustomers.length, 
+            total: customers.length 
+          })}
+        </p>
+      )}
+
       {/* Lista clienti */}
       {loading ? (
         <p className="text-gray-400 dark:text-gray-500">{t('common.loading')}</p>
-      ) : customers.length === 0 ? (
+      ) : filteredCustomers.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 p-12 text-center transition-colors duration-200">
-          <p className="text-5xl mb-4">👤</p>
-          <p className="text-gray-400 dark:text-gray-500">{t('customers.empty')}</p>
+          <p className="text-5xl mb-4">🔍</p>
+          <p className="text-gray-400 dark:text-gray-500">
+            {searchQuery 
+              ? t('customers.searchNoResults') 
+              : t('customers.empty')
+            }
+          </p>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+            >
+              {t('customers.clearSearch')}
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {customers.map(customer => {
+          {filteredCustomers.map(customer => {
             const customerBookings = getCustomerBookings(customer.id)
             const lastBooking = getLastBooking(customer.id)
+
+            
+            const highlightMatch = (text, query) => {
+              if (!query || !text) return text
+              const regex = new RegExp(`(${query})`, 'gi')
+              return text.split(regex).map((part, i) => 
+                regex.test(part) ? (
+                  <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">
+                    {part}
+                  </mark>
+                ) : part
+              )
+            }
 
             return (
               <div
@@ -188,11 +284,19 @@ export default function CustomersPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-gray-800 dark:text-white">
-                      {customer.name} {customer.surname}
+                      {searchQuery 
+                        ? highlightMatch(`${customer.name} ${customer.surname}`, searchQuery)
+                        : `${customer.name} ${customer.surname}`
+                      }
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       📞 {customer.phone || t('customers.noPhone')}
                     </p>
+                    {customer.email && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                        ✉️ {customer.email}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3">
