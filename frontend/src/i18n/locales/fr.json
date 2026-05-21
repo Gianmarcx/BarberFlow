@@ -23,6 +23,7 @@
     "noBookings": "Aucun rendez-vous aujourd'hui",
     "newBooking": "Nouveau rendez-vous",
     "totalToday": "Total Aujourd'hui",
+    "totalRevenue": "Recettes du Jour",
     "customer": "Client"
   },
   "theme": {
@@ -150,24 +151,20 @@
     "requiredFields": "Veuillez remplir tous les champs obligatoires",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet horaire ?",
     "days": {
-   "schedule": {
-  "days": {
-    "MON": "Lun",
-    "TUE": "Mar",
-    "WED": "Mer",
-    "THU": "Jeu",
-    "FRI": "Ven",
-    "SAT": "Sam",
-    "SUN": "Dim",
-    "MONDAY": "Lundi",
-    "TUESDAY": "Mardi",
-    "WEDNESDAY": "Mercredi",
-    "THURSDAY": "Jeudi",
-    "FRIDAY": "Vendredi",
-    "SATURDAY": "Samedi",
-    "SUNDAY": "Dimanche"
-  }
-}
+      "MON": "Lun",
+      "TUE": "Mar",
+      "WED": "Mer",
+      "THU": "Jeu",
+      "FRI": "Ven",
+      "SAT": "Sam",
+      "SUN": "Dim",
+      "MONDAY": "Lundi",
+      "TUESDAY": "Mardi",
+      "WEDNESDAY": "Mercredi",
+      "THURSDAY": "Jeudi",
+      "FRIDAY": "Vendredi",
+      "SATURDAY": "Samedi",
+      "SUNDAY": "Dimanche"
     }
   },
   "errors": {

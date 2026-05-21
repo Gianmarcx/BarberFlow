@@ -23,6 +23,7 @@
     "noBookings": "No appointments today",
     "newBooking": "New Booking",
     "totalToday": "Total Today",
+    "totalRevenue": "Today's Revenue",
     "customer": "Customer"
   },
   "theme": {
@@ -151,19 +152,19 @@
     "deleteConfirm": "Are you sure you want to delete this schedule?",
     "days": {
       "MON": "Mon",
-    "TUE": "Tue",
-    "WED": "Wed",
-    "THU": "Thu",
-    "FRI": "Fri",
-    "SAT": "Sat",
-    "SUN": "Sun",
-    "MONDAY": "Monday",
-    "TUESDAY": "Tuesday",
-    "WEDNESDAY": "Wednesday",
-    "THURSDAY": "Thursday",
-    "FRIDAY": "Friday",
-    "SATURDAY": "Saturday",
-    "SUNDAY": "Sunday"
+      "TUE": "Tue",
+      "WED": "Wed",
+      "THU": "Thu",
+      "FRI": "Fri",
+      "SAT": "Sat",
+      "SUN": "Sun",
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday",
+      "SATURDAY": "Saturday",
+      "SUNDAY": "Sunday"
     }
   },
   "errors": {

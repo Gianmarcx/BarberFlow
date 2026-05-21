@@ -9,33 +9,65 @@ export default function DashboardPage() {
 
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  
+  // ✅ Stato per le statistiche dashboard
+  const [stats, setStats] = useState({
+    totalBookingsToday: 0,
+    confirmedBookings: 0,
+    pendingBookings: 0,
+    cancelledBookings: 0,
+    totalRevenueToday: 0,
+    currency: 'EUR'
+  })
 
   const today = new Date().toISOString().split('T')[0]
 
+  // ✅ useEffect corretto: chiama loadDashboardData che fetcha sia bookings che stats
   useEffect(() => {
-    api.get('/api/bookings')
-      .then(res => {
-        const todayBookings = res.data.filter(b => {
-          const bookingDate = b.startTime?.split('T')[0]
-          return bookingDate === today
-        })
-        todayBookings.sort((a, b) => a.startTime.localeCompare(b.startTime))
-        setBookings(todayBookings)
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false))
+    loadDashboardData()
   }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      // Fetch parallelo: prenotazioni + statistiche
+      const [bookingsRes, statsRes] = await Promise.all([
+        api.get('/api/bookings'),
+        api.get('/api/bookings/dashboard/stats')  // ✅ Endpoint corretto (relativo a BookingController)
+      ])
+
+      // Filtra prenotazioni di oggi
+      const todayBookings = bookingsRes.data.filter(b => {
+        const bookingDate = b.startTime?.split('T')[0]
+        return bookingDate === today
+      })
+      todayBookings.sort((a, b) => a.startTime.localeCompare(b.startTime))
+      
+      setBookings(todayBookings)
+      setStats(statsRes.data)  // ✅ Salva le statistiche ricevute
+    } catch (err) {
+      console.error('Error loading dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatCurrency = (amount, currency = 'EUR') => {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: currency
+    }).format(amount)
+  }
+
+  const formatTime = (datetime) => {
+    if (!datetime) return ''
+    return datetime.split('T')[1]?.slice(0, 5)
+  }
 
   const statusColors = {
     PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     CONFIRMED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     CANCELLED: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
     COMPLETED: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-  }
-
-  const formatTime = (datetime) => {
-    if (!datetime) return ''
-    return datetime.split('T')[1]?.slice(0, 5)
   }
 
   return (
@@ -53,33 +85,47 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* ✅ Stats Cards - UNICA griglia con tutte le card (incluso incasso) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Total Today */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200">
-          <p className="text-2xl font-bold text-gray-800 dark:text-white">{bookings.length}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.totalToday')}</p>
+        
+        {/* 💰 INCASSO TOTALE - Card in evidenza con bordo verde */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200 border-l-4 border-green-500">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+            {formatCurrency(stats.totalRevenueToday, stats.currency)}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('dashboard.totalRevenue')}
+          </p>
         </div>
+
+        {/* Total Bookings */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200">
+          <p className="text-2xl font-bold text-gray-800 dark:text-white">
+            {stats.totalBookingsToday}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('dashboard.totalToday')}
+          </p>
+        </div>
+
         {/* Confirmed */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200">
           <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {bookings.filter(b => b.status === 'CONFIRMED').length}
+            {stats.confirmedBookings}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.statuses.CONFIRMED')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('bookings.statuses.CONFIRMED')}
+          </p>
         </div>
+
         {/* Pending */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200">
           <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-            {bookings.filter(b => b.status === 'PENDING').length}
+            {stats.pendingBookings}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.statuses.PENDING')}</p>
-        </div>
-        {/* Cancelled */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow dark:shadow-gray-700/50 transition-colors duration-200">
-          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-            {bookings.filter(b => b.status === 'CANCELLED').length}
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('bookings.statuses.PENDING')}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.statuses.CANCELLED')}</p>
         </div>
       </div>
 

@@ -23,6 +23,7 @@
     "noBookings": "No hay citas hoy",
     "newBooking": "Nueva reserva",
     "totalToday": "Total Hoy",
+    "totalRevenue": "Ingresos de Hoy",
     "customer": "Cliente"
   },
   "theme": {
@@ -150,20 +151,20 @@
     "requiredFields": "Completa todos los campos obligatorios",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar este horario?",
     "days": {
-         "MON": "Lun",
-    "TUE": "Mar",
-    "WED": "Mié",
-    "THU": "Jue",
-    "FRI": "Vie",
-    "SAT": "Sáb",
-    "SUN": "Dom",
-    "MONDAY": "Lunes",
-    "TUESDAY": "Martes",
-    "WEDNESDAY": "Miércoles",
-    "THURSDAY": "Jueves",
-    "FRIDAY": "Viernes",
-    "SATURDAY": "Sábado",
-    "SUNDAY": "Domingo"
+      "MON": "Lun",
+      "TUE": "Mar",
+      "WED": "Mié",
+      "THU": "Jue",
+      "FRI": "Vie",
+      "SAT": "Sáb",
+      "SUN": "Dom",
+      "MONDAY": "Lunes",
+      "TUESDAY": "Martes",
+      "WEDNESDAY": "Miércoles",
+      "THURSDAY": "Jueves",
+      "FRIDAY": "Viernes",
+      "SATURDAY": "Sábado",
+      "SUNDAY": "Domingo"
     }
   },
   "errors": {

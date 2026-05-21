@@ -6,7 +6,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.trimflow.trimflow.dto.BookingDTO;
+import com.trimflow.trimflow.dto.DashboardStatsDTO;
 import com.trimflow.trimflow.service.BookingService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,6 +19,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
+
+    // ✅ Logger dichiarato correttamente come static final
+    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     private final BookingService bookingService;
 
@@ -61,5 +68,19 @@ public class BookingController {
         return ResponseEntity.ok(
                 bookingService.getAvailableSlots(date, serviceId, barberId, auth.getName())
         );
+    }
+
+   
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<DashboardStatsDTO> getDashboardStats(Authentication auth) {
+        try {
+            // Usiamo auth.getName() per coerenza con gli altri metodi (invece di X-Shop-Email header)
+            DashboardStatsDTO stats = bookingService.getTodayStats(auth.getName());
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            
+            logger.error("Error fetching dashboard stats: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
     }
 }

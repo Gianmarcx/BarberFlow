@@ -23,6 +23,7 @@
     "noBookings": "Nessun appuntamento oggi",
     "newBooking": "Nuova Prenotazione",
     "totalToday": "Totali Oggi",
+    "totalRevenue": "Incasso Oggi",
     "customer": "Cliente"
   },
   "theme": {
@@ -150,20 +151,20 @@
     "requiredFields": "Compila tutti i campi obbligatori",
     "deleteConfirm": "Vuoi eliminare questo orario?",
     "days": {
-         "MON": "Lun",
-    "TUE": "Mar",
-    "WED": "Mer",
-    "THU": "Gio",
-    "FRI": "Ven",
-    "SAT": "Sab",
-    "SUN": "Dom",
-    "MONDAY": "Lunedì",
-    "TUESDAY": "Martedì",
-    "WEDNESDAY": "Mercoledì",
-    "THURSDAY": "Giovedì",
-    "FRIDAY": "Venerdì",
-    "SATURDAY": "Sabato",
-    "SUNDAY": "Domenica"
+      "MON": "Lun",
+      "TUE": "Mar",
+      "WED": "Mer",
+      "THU": "Gio",
+      "FRI": "Ven",
+      "SAT": "Sab",
+      "SUN": "Dom",
+      "MONDAY": "Lunedì",
+      "TUESDAY": "Martedì",
+      "WEDNESDAY": "Mercoledì",
+      "THURSDAY": "Giovedì",
+      "FRIDAY": "Venerdì",
+      "SATURDAY": "Sabato",
+      "SUNDAY": "Domenica"
     }
   },
   "errors": {

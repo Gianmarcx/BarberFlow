@@ -3,6 +3,7 @@ package com.trimflow.trimflow.service;
 import org.springframework.stereotype.Service;
 
 import com.trimflow.trimflow.dto.BookingDTO;
+import com.trimflow.trimflow.dto.DashboardStatsDTO;
 import com.trimflow.trimflow.entity.Barber;
 import com.trimflow.trimflow.entity.Booking;
 import com.trimflow.trimflow.entity.Customer;
@@ -57,11 +58,9 @@ public class BookingService {
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        // ✅ recupera il barbiere dal DTO
         Barber barber = barberRepository.findById(dto.getBarberId())
                 .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
 
-        // ✅ verifica che il barbiere appartenga al negozio loggato
         if (!barber.getShop().getEmail().equals(shopEmail)) {
             throw new IllegalStateException("Non autorizzato");
         }
@@ -81,7 +80,6 @@ public class BookingService {
 
         validateSchedule(barber, start, end);
 
-        // ✅ controllo sovrapposizioni per quel barbiere specifico
         if (bookingRepository.existsOverlappingBooking(barber, start, end)) {
             throw new IllegalStateException(
                 "Il barbiere " + barber.getName() + " ha già una prenotazione in questo orario"
@@ -90,7 +88,7 @@ public class BookingService {
 
         Booking booking = new Booking();
         booking.setCustomer(customer);
-        booking.setBarber(barber);          // ✅ era owner (User), ora barber (Barber)
+        booking.setBarber(barber);
         booking.setService(service);
         booking.setStartTime(start);
         booking.setEndTime(end);
@@ -106,7 +104,6 @@ public class BookingService {
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
-        // ✅ recupera tutti i barbieri del negozio e le loro prenotazioni
         List<Barber> barbers = barberRepository.findByShop(shop);
 
         return barbers.stream()
@@ -124,14 +121,12 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
-        // ✅ verifica che la prenotazione appartenga al negozio
         if (!booking.getBarber().getShop().getEmail().equals(shopEmail)) {
             throw new IllegalStateException("Non autorizzato");
         }
 
         Barber barber = booking.getBarber();
 
-        // ✅ se cambia barbiere
         if (dto.getBarberId() != null && !dto.getBarberId().equals(barber.getId())) {
             barber = barberRepository.findById(dto.getBarberId())
                     .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
@@ -182,7 +177,6 @@ public class BookingService {
 
     public List<LocalTime> getAvailableSlots(LocalDate date, Long serviceId, Long barberId, String shopEmail) {
 
-        // ✅ aggiunto barberId come parametro
         Barber barber = barberRepository.findById(barberId)
                 .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
 
@@ -245,5 +239,51 @@ public class BookingService {
             bookingEnd.isAfter(schedule.getCloseTime())) {
             throw new IllegalStateException("Prenotazione fuori orario lavorativo");
         }
+    } 
+
+   
+    public DashboardStatsDTO getTodayStats(String shopEmail) {
+        LocalDate today = LocalDate.now();
+        
+        // Recupera lo shop per sicurezza
+        User shop = userRepository.findByEmail(shopEmail)
+                .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
+
+        // Recupera tutti i barbieri dello shop
+        List<Barber> barbers = barberRepository.findByShop(shop);
+
+        // Recupera tutte le prenotazioni di oggi per tutti i barbieri
+        List<Booking> todayBookings = barbers.stream()
+                .flatMap(barber -> bookingRepository.findByBarberAndDate(barber, today).stream())
+                .collect(Collectors.toList());
+
+        // Conta per status
+        long confirmed = todayBookings.stream()
+                .filter(b -> "CONFIRMED".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus()))
+                .count();
+        
+        long pending = todayBookings.stream()
+                .filter(b -> "PENDING".equals(b.getStatus()))
+                .count();
+        
+        long cancelled = todayBookings.stream()
+                .filter(b -> "CANCELLED".equals(b.getStatus()))
+                .count();
+
+        
+        
+        double totalRevenue = todayBookings.stream()
+                .filter(b -> "CONFIRMED".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus()))
+                .mapToDouble(b -> b.getPriceSnapshot() != null ? b.getPriceSnapshot().doubleValue() : 0.0)
+                .sum();
+
+        return new DashboardStatsDTO(
+                todayBookings.size(),
+                confirmed,
+                pending,
+                cancelled,
+                Math.round(totalRevenue * 100.0) / 100.0, // Arrotonda a 2 decimali
+                "EUR"
+        );
     }
-}
+} 
