@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+import toast from 'react-hot-toast' // ✅ 1. Importa toast
 
 const HOUR_HEIGHT = 130
 const START_HOUR = 8
@@ -168,9 +169,12 @@ export default function BookingsPage() {
     setShowForm(true)
   }
 
+ 
   const handleSave = async () => {
     if (!form.customerName || !form.serviceId || !form.date || !form.startTime || !form.barberId) {
-      setError(t('errors.required'))
+      const msg = t('errors.required')
+      setError(msg)
+      toast.error(msg) 
       return
     }
     try {
@@ -197,22 +201,29 @@ export default function BookingsPage() {
       } else {
         await api.post('/api/bookings', payload)
       }
+      
+      toast.success(t('common.saveSuccess')) 
       setShowForm(false)
       loadAll()
     } catch (err) {
-      setError(err.response?.data?.message || t('errors.serverError'))
+      const msg = err.response?.data?.message || t('common.saveError')
+      setError(msg)
+      toast.error(msg) 
     } finally {
       setSaving(false)
     }
   }
 
+  
   const handleDelete = async (id, e) => {
     e.stopPropagation()
     if (!window.confirm(t('bookings.confirmDelete'))) return
     try {
       await api.delete(`/api/bookings/${id}`)
+      toast.success(t('common.deleteSuccess')) 
       loadAll()
     } catch (err) {
+      toast.error(t('common.deleteError')) 
       console.error(err)
     }
   }

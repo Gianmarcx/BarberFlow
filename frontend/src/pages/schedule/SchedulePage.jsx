@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+import toast from 'react-hot-toast' // ✅ 1. Importa toast
 
 const DAYS = [
   'MONDAY', 'TUESDAY', 'WEDNESDAY',
@@ -74,9 +75,12 @@ export default function SchedulePage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.dayOfWeek || !form.openTime || !form.closeTime) {
-      setError(t('schedule.requiredFields'))
+      const msg = t('schedule.requiredFields')
+      setError(msg)
+      toast.error(msg) // ✅ Feedback visivo validazione
       return
     }
 
@@ -86,13 +90,18 @@ export default function SchedulePage() {
         openTime: form.openTime + ':00',
         closeTime: form.closeTime + ':00'
       })
+      
+      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
       setShowForm(false)
       loadSchedules()
     } catch (err) {
-      setError(err.response?.data?.message || t('errors.serverError'))
+      const msg = err.response?.data?.message || t('errors.serverError')
+      setError(msg)
+      toast.error(msg) // ✅ Notifica errore
     }
   }
 
+  // ✅ 3. setupWorkingDays aggiornato con Toast (sostituisce alert)
   const setupWorkingDays = async () => {
     if (!window.confirm(t('schedule.setupWorkingDaysConfirm', {
       weekdayOpen: DEFAULT_OPEN,
@@ -110,7 +119,7 @@ export default function SchedulePage() {
       const daysToCreate = WORKING_DAYS.filter(day => !configuredDays.includes(day))
 
       if (daysToCreate.length === 0) {
-        alert(t('schedule.alreadyConfigured'))
+        toast.info(t('schedule.alreadyConfigured')) // ✅ Info toast invece di alert
         return
       }
 
@@ -125,22 +134,27 @@ export default function SchedulePage() {
       })
 
       await Promise.all(promises)
-      alert(t('schedule.configuredSuccess', { count: daysToCreate.length }))
+      toast.success(t('schedule.configuredSuccess', { count: daysToCreate.length })) // ✅ Success toast
       loadSchedules()
     } catch (err) {
+      const msg = err.response?.data?.message || t('errors.serverError')
+      setError(msg)
+      toast.error(msg) // ✅ Error toast
       console.error(err)
-      setError(err.response?.data?.message || t('errors.serverError'))
     } finally {
       setBulkLoading(false)
     }
   }
 
+  // ✅ 4. handleDelete aggiornato con Toast
   const handleDelete = async (dayOfWeek) => {
     if (!window.confirm(t('schedule.deleteConfirm'))) return
     try {
       await api.delete(`/api/schedules/${dayOfWeek}`)
+      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
       loadSchedules()
     } catch (err) {
+      toast.error(t('common.deleteError')) // ✅ Notifica errore
       console.error(err)
     }
   }

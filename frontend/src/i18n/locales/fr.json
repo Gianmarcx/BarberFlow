@@ -84,7 +84,11 @@
     "lastBooking": "Dernière Réservation",
     "customerNotes": "Notes du Client",
     "bookingHistory": "Historique des Réservations",
-    "phoneExists": "Client avec ce téléphone existe déjà"
+    "phoneExists": "Client avec ce téléphone existe déjà",
+    "searchPlaceholder": "Rechercher par nom, prénom, téléphone...",
+    "searchResults": "{{count}} clients trouvés sur {{total}}",
+    "searchNoResults": "Aucun client trouvé pour cette recherche",
+    "clearSearch": "Effacer la recherche"
   },
   "services": {
     "title": "Services",
@@ -180,7 +184,11 @@
     "cancel": "Annuler",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "saveSuccess": "Enregistré avec succès",
+    "deleteSuccess": "Supprimé avec succès",
+    "saveError": "Erreur lors de l'enregistrement",
+    "deleteError": "Erreur lors de la suppression"
   },
   "locale": "fr-FR"
 }

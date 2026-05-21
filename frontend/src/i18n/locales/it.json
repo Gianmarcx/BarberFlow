@@ -84,7 +84,11 @@
     "lastBooking": "Ultima Prenotazione",
     "customerNotes": "Note Cliente",
     "bookingHistory": "Storico Prenotazioni",
-    "phoneExists": "Cliente con questo telefono già esistente"
+    "phoneExists": "Cliente con questo telefono già esistente",
+     "searchPlaceholder": "Cerca per nome, cognome, telefono...",
+    "searchResults": "Trovati {{count}} su {{total}} clienti",
+    "searchNoResults": "Nessun cliente trovato per questa ricerca",
+    "clearSearch": "Cancella ricerca"
   },
   "services": {
     "title": "Servizi",
@@ -180,7 +184,11 @@
     "cancel": "Annulla",
     "delete": "Elimina",
     "edit": "Modifica",
-    "confirm": "Conferma"
+    "confirm": "Conferma",
+    "saveSuccess": "Salvato con successo",
+    "deleteSuccess": "Eliminato con successo",
+    "saveError": "Errore durante il salvataggio",
+    "deleteError": "Errore durante l'eliminazione"
   },
   "locale": "it-IT"
 }

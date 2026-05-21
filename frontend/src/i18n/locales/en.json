@@ -84,7 +84,11 @@
     "lastBooking": "Last Booking",
     "customerNotes": "Customer Notes",
     "bookingHistory": "Booking History",
-    "phoneExists": "Customer with this phone already exists"
+    "phoneExists": "Customer with this phone already exists",
+    "searchPlaceholder": "Search by name, surname, phone...",
+    "searchResults": "Found {{count}} of {{total}} customers",
+    "searchNoResults": "No customers found for this search",
+    "clearSearch": "Clear search"
   },
   "services": {
     "title": "Services",
@@ -175,12 +179,16 @@
     "unauthorized": "Session expired, please login again"
   },
   "common": {
-    "loading": "Loading...",
+     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "saveError": "Error saving",
+    "deleteError": "Error deleting"
   },
   "locale": "en-GB"
 }

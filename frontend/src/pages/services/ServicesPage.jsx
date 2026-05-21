@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+import toast from 'react-hot-toast' // ✅ 1. Importa toast
 
 const emptyForm = {
   name: '',
@@ -70,15 +71,20 @@ export default function ServicesPage() {
     }))
   }
 
+  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.name || form.price === '' || form.duration === '') {
-      setError(t('errors.required'))
+      const msg = t('errors.required')
+      setError(msg)
+      toast.error(msg) // ✅ Feedback visivo validazione
       return
     }
 
     const price = Number(form.price)
     if (isNaN(price)) {
-      setError(t('services.priceInvalid') || t('errors.invalidInput'))
+      const msg = t('services.priceInvalid') || t('errors.invalidInput')
+      setError(msg)
+      toast.error(msg) // ✅ Feedback visivo prezzo non valido
       return
     }
 
@@ -96,23 +102,29 @@ export default function ServicesPage() {
         await api.post('/api/services', payload)
       }
 
+      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
       setShowForm(false)
       setForm(emptyForm)
       loadServices()
     } catch (err) {
+      const msg = err.response?.data?.message || t('errors.serverError')
+      setError(msg)
+      toast.error(msg) // ✅ Notifica errore
       if (import.meta.env.DEV) {
         console.error('ServicesPage save error:', err)
       }
-      setError(err.response?.data?.message || t('errors.serverError'))
     }
   }
 
+  // ✅ 3. handleDelete aggiornato con Toast
   const handleDelete = async (id) => {
     if (!window.confirm(t('services.confirmDelete'))) return
     try {
       await api.delete(`/api/services/${id}`)
+      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
       loadServices()
     } catch (err) {
+      toast.error(t('common.deleteError')) // ✅ Notifica errore
       console.error(err)
     }
   }

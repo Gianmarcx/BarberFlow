@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+import toast from 'react-hot-toast' 
 
 const emptyForm = {
   name: '',
@@ -70,9 +71,12 @@ export default function BarberPage() {
     }))
   }
 
+  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.name.trim()) {
-      setError(t('barbers.nameRequired'))
+      const msg = t('barbers.nameRequired')
+      setError(msg)
+      toast.error(msg) // ✅ Feedback visivo validazione
       return
     }
 
@@ -90,22 +94,28 @@ export default function BarberPage() {
         await api.post('/api/barbers', payload)
       }
 
+      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
       setShowForm(false)
       setForm(emptyForm)
       loadBarbers()
     } catch (err) {
+      const msg = err.response?.data?.message || t('errors.serverError')
+      setError(msg)
+      toast.error(msg) // ✅ Notifica errore
       console.error('Errore salvataggio barbiere:', err)
-      setError(err.response?.data?.message || t('errors.serverError'))
     }
   }
 
+  // ✅ 3. handleDelete aggiornato con Toast
   const handleDelete = async (id) => {
     if (!window.confirm(t('barbers.deleteConfirm'))) return
 
     try {
       await api.delete(`/api/barbers/${id}`)
+      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
       loadBarbers()
     } catch (err) {
+      toast.error(t('common.deleteError')) // ✅ Notifica errore
       console.error(err)
     }
   }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
+import toast from 'react-hot-toast' // ✅ 1. Importa toast
 
 export default function CustomersPage() {
   const { t } = useTranslation()
@@ -8,7 +9,6 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState([])
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
-  
   
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -75,9 +75,12 @@ export default function CustomersPage() {
     }))
   }
 
+  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.name || !form.phone) {
-      setError(t('errors.required'))
+      const msg = t('errors.required')
+      setError(msg)
+      toast.error(msg) // ✅ Feedback visivo validazione
       return
     }
 
@@ -87,7 +90,9 @@ export default function CustomersPage() {
       )
 
       if (existingCustomer && !editingCustomer) {
-        setError(t('customers.phoneExists'))
+        const msg = t('customers.phoneExists')
+        setError(msg)
+        toast.error(msg) // ✅ Feedback visivo telefono esistente
         return
       }
 
@@ -104,20 +109,26 @@ export default function CustomersPage() {
         await api.post('/api/customers', payload)
       }
 
+      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
       setShowForm(false)
       loadAll()
     } catch (err) {
-      setError(err.response?.data?.message || t('errors.serverError'))
+      const msg = err.response?.data?.message || t('errors.serverError')
+      setError(msg)
+      toast.error(msg) // ✅ Notifica errore
     }
   }
 
+  // ✅ 3. handleDelete aggiornato con Toast
   const handleDelete = async (id) => {
     if (!window.confirm(t('customers.confirmDelete'))) return
 
     try {
       await api.delete(`/api/customers/${id}`)
+      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
       loadAll()
     } catch (err) {
+      toast.error(t('common.deleteError')) // ✅ Notifica errore
       console.error(err)
     }
   }
@@ -144,7 +155,6 @@ export default function CustomersPage() {
     })
   }
 
-  
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers
     
@@ -262,7 +272,6 @@ export default function CustomersPage() {
             const customerBookings = getCustomerBookings(customer.id)
             const lastBooking = getLastBooking(customer.id)
 
-            
             const highlightMatch = (text, query) => {
               if (!query || !text) return text
               const regex = new RegExp(`(${query})`, 'gi')
