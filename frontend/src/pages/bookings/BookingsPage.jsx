@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
-import toast from 'react-hot-toast' // ✅ 1. Importa toast
+import toast from 'react-hot-toast'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const HOUR_HEIGHT = 130
 const START_HOUR = 8
@@ -33,8 +34,7 @@ function timeToMinutes(time) {
 function getTopPosition(startTime) {
   const time = startTime.split('T')[1]?.slice(0, 5) || '00:00'
   const minutes = timeToMinutes(time)
-  const startMinutes = START_HOUR * 60
-  return ((minutes - startMinutes) / 60) * HOUR_HEIGHT
+  return ((minutes - START_HOUR * 60) / 60) * HOUR_HEIGHT
 }
 
 function getHeight(startTime, endTime) {
@@ -45,6 +45,7 @@ function getHeight(startTime, endTime) {
 
 export default function BookingsPage() {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
 
   const [hoveredBooking, setHoveredBooking] = useState(null)
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 })
@@ -64,16 +65,9 @@ export default function BookingsPage() {
   const scrollRef = useRef(null)
 
   const [form, setForm] = useState({
-    customerName: '',
-    customerSurname: '',
-    customerPhone: '',
-    customerId: null,
-    barberId: '',
-    serviceId: '',
-    date: '',
-    startTime: '',
-    status: 'PENDING',
-    notes: ''
+    customerName: '', customerSurname: '', customerPhone: '',
+    customerId: null, barberId: '', serviceId: '',
+    date: '', startTime: '', status: 'PENDING', notes: ''
   })
 
   useEffect(() => { loadAll() }, [])
@@ -133,6 +127,18 @@ export default function BookingsPage() {
     setCurrentDate(d)
   }
 
+  const prevDay = () => {
+    const d = new Date(currentDate)
+    d.setDate(d.getDate() - 1)
+    setCurrentDate(d)
+  }
+
+  const nextDay = () => {
+    const d = new Date(currentDate)
+    d.setDate(d.getDate() + 1)
+    setCurrentDate(d)
+  }
+
   const goToToday = () => setCurrentDate(new Date())
 
   const openNew = (date = '', time = '') => {
@@ -169,12 +175,11 @@ export default function BookingsPage() {
     setShowForm(true)
   }
 
- 
   const handleSave = async () => {
     if (!form.customerName || !form.serviceId || !form.date || !form.startTime || !form.barberId) {
       const msg = t('errors.required')
       setError(msg)
-      toast.error(msg) 
+      toast.error(msg)
       return
     }
     try {
@@ -201,29 +206,27 @@ export default function BookingsPage() {
       } else {
         await api.post('/api/bookings', payload)
       }
-      
-      toast.success(t('common.saveSuccess')) 
+      toast.success(t('common.saveSuccess'))
       setShowForm(false)
       loadAll()
     } catch (err) {
       const msg = err.response?.data?.message || t('common.saveError')
       setError(msg)
-      toast.error(msg) 
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
   }
 
-  
   const handleDelete = async (id, e) => {
     e.stopPropagation()
     if (!window.confirm(t('bookings.confirmDelete'))) return
     try {
       await api.delete(`/api/bookings/${id}`)
-      toast.success(t('common.deleteSuccess')) 
+      toast.success(t('common.deleteSuccess'))
       loadAll()
     } catch (err) {
-      toast.error(t('common.deleteError')) 
+      toast.error(t('common.deleteError'))
       console.error(err)
     }
   }
@@ -243,16 +246,12 @@ export default function BookingsPage() {
     return b ? b.name : `#${id}`
   }
 
-  const isToday = (date) => {
-    const today = new Date()
-    return date.toDateString() === today.toDateString()
-  }
+  const isToday = (date) => new Date().toDateString() === date.toDateString()
 
   const getBookingsForDay = (date) => {
     const dateStr = date.toISOString().split('T')[0]
     return bookings.filter(b => {
-      const bookingDate = b.startTime?.split('T')[0]
-      const matchesDate = bookingDate === dateStr
+      const matchesDate = b.startTime?.split('T')[0] === dateStr
       const matchesBarber = selectedBarber === 'all' || b.barberId === parseInt(selectedBarber)
       return matchesDate && matchesBarber
     })
@@ -268,37 +267,115 @@ export default function BookingsPage() {
     return `${first.getDate()} ${first.toLocaleString('en', { month: 'short' })} – ${last.getDate()} ${last.toLocaleString('en', { month: 'short' })} ${last.getFullYear()}`
   }
 
+  const formatDayMobile = () => {
+    return currentDate.toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    })
+  }
+
+  const renderDayColumn = (day, showClick = true) => {
+    const dayBookings = getBookingsForDay(day)
+    const dateStr = day.toISOString().split('T')[0]
+
+    return (
+      <div
+        className={`flex-1 border-l border-gray-100 dark:border-gray-700 relative ${showClick ? 'cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/30' : ''} transition-colors`}
+        onClick={showClick ? () => openNew(dateStr, '') : undefined}
+      >
+        {hours.map(hour => (
+          <div key={hour} className="border-t border-gray-100 dark:border-gray-700" style={{ height: `${HOUR_HEIGHT}px` }} />
+        ))}
+
+        {isToday(day) && (() => {
+          const now = new Date()
+          const minutes = now.getHours() * 60 + now.getMinutes()
+          const startMinutes = START_HOUR * 60
+          if (minutes < startMinutes || minutes > END_HOUR * 60) return null
+          const top = ((minutes - startMinutes) / 60) * HOUR_HEIGHT
+          return (
+            <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: `${top}px` }}>
+              <div className="w-2 h-2 rounded-full bg-red-500 -ml-1" />
+              <div className="flex-1 h-px bg-red-500" />
+            </div>
+          )
+        })()}
+
+        {dayBookings.map(booking => {
+          const top = getTopPosition(booking.startTime)
+          const height = getHeight(booking.startTime, booking.endTime)
+          const colorClass = statusColors[booking.status] || statusColors.PENDING
+          const startTime = booking.startTime?.split('T')[1]?.slice(0, 5)
+          const endTime = booking.endTime?.split('T')[1]?.slice(0, 5)
+
+          return (
+            <div
+              key={booking.id}
+              className={`absolute left-1 right-1 rounded-lg border-l-4 px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition ${colorClass}`}
+              style={{ top: `${top}px`, height: `${Math.max(height, 32)}px` }}
+              onClick={e => openEdit(booking, e)}
+              onMouseEnter={(e) => { setHoveredBooking(booking); setHoverPos({ x: e.clientX, y: e.clientY }) }}
+              onMouseMove={(e) => setHoverPos({ x: e.clientX, y: e.clientY })}
+              onMouseLeave={() => setHoveredBooking(null)}
+            >
+              <p className="text-xs font-bold leading-tight truncate">
+                {startTime} - {endTime} · {getCustomerName(booking.customerId)}
+              </p>
+              <p className="text-xs leading-tight truncate opacity-80">✂️ {getServiceName(booking.serviceId)}</p>
+              <p className="text-xs leading-tight truncate opacity-70">👤 {getBarberName(booking.barberId)}</p>
+              {booking.notes && <p className="text-xs leading-tight truncate opacity-60 italic">📝 {booking.notes}</p>}
+              <span className="text-xs font-medium opacity-80">{t(`bookings.statuses.${booking.status}`)}</span>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   if (loading) return <p className="text-gray-400 dark:text-gray-500">{t('common.loading')}</p>
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 overflow-hidden transition-colors duration-200">
+    <div className={`flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 overflow-hidden transition-colors duration-200 ${
+      isMobile ? 'h-[calc(100vh-10rem)]' : 'h-[calc(100vh-6rem)]'
+    }`}>
 
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <button onClick={goToToday} className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700 gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToToday}
+            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
             {t('bookings.today')}
           </button>
           <div className="flex items-center gap-1">
-            <button onClick={prevWeek} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <button 
+              onClick={isMobile ? prevDay : prevWeek} 
+              aria-label={isMobile ? t('bookings.prevDay') : t('bookings.prevWeek')}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            >
               <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button onClick={nextWeek} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <button 
+              onClick={isMobile ? nextDay : nextWeek}
+              aria-label={isMobile ? t('bookings.nextDay') : t('bookings.nextWeek')}
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            >
               <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
-          <span className="text-base font-semibold text-gray-800 dark:text-white">{formatWeekRange()}</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-white">
+            {isMobile ? formatDayMobile() : formatWeekRange()}
+          </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <select
             value={selectedBarber}
             onChange={e => setSelectedBarber(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">{t('bookings.allBarbers')}</option>
             {barbers.map(b => (
@@ -306,42 +383,56 @@ export default function BookingsPage() {
             ))}
           </select>
           <button
-            onClick={() => openNew()}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50"
+            onClick={() => openNew(currentDate.toISOString().split('T')[0], '')}
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium shadow"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            {t('bookings.new')}
+            {!isMobile && t('bookings.new')}
           </button>
         </div>
       </div>
 
-      {/* Header giorni */}
-      <div className="flex border-b border-gray-100 dark:border-gray-700">
-        <div className="w-16 flex-shrink-0" />
-        {weekDays.map((day, i) => (
-          <div key={i} className="flex-1 text-center py-3 border-l border-gray-100 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">{t(`schedule.days.${dayNames[i]}`)}</p>
-            <p className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
-              isToday(day) ? 'bg-blue-600 text-white' : 'text-gray-800 dark:text-white'
+      {!isMobile && (
+        <div className="flex border-b border-gray-100 dark:border-gray-700">
+          <div className="w-16 flex-shrink-0" />
+          {weekDays.map((day, i) => (
+            <div key={i} className="flex-1 text-center py-3 border-l border-gray-100 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                {t(`schedule.days.${dayNames[i]}`)}
+              </p>
+              <p className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
+                isToday(day) ? 'bg-blue-600 text-white' : 'text-gray-800 dark:text-white'
+              }`}>
+                {day.getDate()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isMobile && (
+        <div className="flex border-b border-gray-100 dark:border-gray-700">
+          <div className="w-12 flex-shrink-0" />
+          <div className="flex-1 text-center py-2 border-l border-gray-100 dark:border-gray-700">
+            <p className={`text-lg font-semibold w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
+              isToday(currentDate) ? 'bg-blue-600 text-white' : 'text-gray-800 dark:text-white'
             }`}>
-              {day.getDate()}
+              {currentDate.getDate()}
             </p>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* Griglia calendario */}
-      <div ref={scrollRef} className="flex-1 overflow-auto">
+      <div ref={scrollRef} className="flex-1 overflow-auto touch-pan-y">
         <div className="flex" style={{ height: `${HOUR_HEIGHT * (END_HOUR - START_HOUR)}px` }}>
 
-          {/* Colonna orari */}
-          <div className="w-16 flex-shrink-0 relative">
+          <div className={`${isMobile ? 'w-12' : 'w-16'} flex-shrink-0 relative`}>
             {hours.map(hour => (
               <div
                 key={hour}
-                className="absolute w-full text-right pr-2"
+                className="absolute w-full text-right pr-1"
                 style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT - 8}px` }}
               >
                 <span className="text-xs text-gray-400 dark:text-gray-500">
@@ -351,88 +442,18 @@ export default function BookingsPage() {
             ))}
           </div>
 
-          {/* Colonne giorni */}
-          {weekDays.map((day, i) => {
-            const dayBookings = getBookingsForDay(day)
-            const dateStr = day.toISOString().split('T')[0]
+          {!isMobile && weekDays.map((day, i) => (
+            <div key={i} className="flex-1">
+              {renderDayColumn(day)}
+            </div>
+          ))}
 
-            return (
-              <div
-                key={i}
-                className="flex-1 border-l border-gray-100 dark:border-gray-700 relative cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors"
-                onClick={() => openNew(dateStr, '')}
-              >
-                {hours.map(hour => (
-                  <div key={hour} className="border-t border-gray-100 dark:border-gray-700" style={{ height: `${HOUR_HEIGHT}px` }} />
-                ))}
+          {isMobile && renderDayColumn(currentDate)}
 
-                {/* Linea ora corrente */}
-                {isToday(day) && (() => {
-                  const now = new Date()
-                  const minutes = now.getHours() * 60 + now.getMinutes()
-                  const startMinutes = START_HOUR * 60
-                  if (minutes < startMinutes || minutes > END_HOUR * 60) return null
-                  const top = ((minutes - startMinutes) / 60) * HOUR_HEIGHT
-                  return (
-                    <div
-                      className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
-                      style={{ top: `${top}px` }}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-red-500 -ml-1" />
-                      <div className="flex-1 h-px bg-red-500" />
-                    </div>
-                  )
-                })()}
-
-                {/* Prenotazioni */}
-                {dayBookings.map(booking => {
-                  const top = getTopPosition(booking.startTime)
-                  const height = getHeight(booking.startTime, booking.endTime)
-                  const colorClass = statusColors[booking.status] || statusColors.PENDING
-                  const startTime = booking.startTime?.split('T')[1]?.slice(0, 5)
-                  const endTime = booking.endTime?.split('T')[1]?.slice(0, 5)
-
-                  return (
-                    <div
-                      key={booking.id}
-                      className={`absolute left-1 right-1 rounded-lg border-l-4 px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition ${colorClass}`}
-                      style={{ top: `${top}px`, height: `${Math.max(height, 24)}px` }}
-                      onClick={e => openEdit(booking, e)}
-                      onMouseEnter={(e) => {
-                        setHoveredBooking(booking)
-                        setHoverPos({ x: e.clientX, y: e.clientY })
-                      }}
-                      onMouseMove={(e) => setHoverPos({ x: e.clientX, y: e.clientY })}
-                      onMouseLeave={() => setHoveredBooking(null)}
-                    >
-                      <p className="text-xs font-bold leading-tight truncate">
-                        {startTime} - {endTime} · {getCustomerName(booking.customerId)}
-                      </p>
-                      <p className="text-xs leading-tight truncate opacity-80">
-                        ✂️ {getServiceName(booking.serviceId)}
-                      </p>
-                      <p className="text-xs leading-tight truncate opacity-70">
-                        👤 {getBarberName(booking.barberId)}
-                      </p>
-                      {booking.notes && (
-                        <p className="text-xs leading-tight truncate opacity-60 italic">
-                          📝 {booking.notes}
-                        </p>
-                      )}
-                      <span className="text-xs font-medium opacity-80">
-                        {t(`bookings.statuses.${booking.status}`)}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
         </div>
       </div>
 
-      {/* Tooltip preview */}
-      {hoveredBooking && (
+      {!isMobile && hoveredBooking && (
         <div
           className="fixed z-50 bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 w-64 pointer-events-none transition-colors duration-200"
           style={{
@@ -461,10 +482,17 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Modal form */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-700/50 w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto transition-colors duration-200">
+        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
+          <div className={`bg-white dark:bg-gray-800 w-full md:max-w-md p-6 space-y-4 overflow-y-auto transition-colors duration-200 ${
+            isMobile
+              ? 'rounded-t-3xl max-h-[90vh]'
+              : 'rounded-2xl shadow-2xl max-h-[90vh]'
+          }`}>
+
+            {isMobile && (
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto -mt-2 mb-2" />
+            )}
 
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">
               {editingBooking ? t('common.edit') : t('bookings.new')}
@@ -485,14 +513,14 @@ export default function BookingsPage() {
                     value={form.customerName}
                     onChange={e => handleFormChange('customerName', e.target.value)}
                     placeholder={t('customers.name') + ' *'}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
                     type="text"
                     value={form.customerSurname}
                     onChange={e => handleFormChange('customerSurname', e.target.value)}
                     placeholder={t('customers.surname')}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <input
@@ -500,47 +528,33 @@ export default function BookingsPage() {
                   value={form.customerPhone}
                   onChange={e => handleFormChange('customerPhone', e.target.value)}
                   placeholder={t('customers.phone')}
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.barber')} *</label>
-              <select
-                value={form.barberId}
-                onChange={e => handleFormChange('barberId', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <select value={form.barberId} onChange={e => handleFormChange('barberId', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">-- {t('bookings.selectBarber')} --</option>
-                {barbers.map(b => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
-                ))}
+                {barbers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.service')} *</label>
-              <select
-                value={form.serviceId}
-                onChange={e => handleFormChange('serviceId', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <select value={form.serviceId} onChange={e => handleFormChange('serviceId', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">-- {t('bookings.service')} --</option>
-                {services.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.duration} min - €{s.price})</option>
-                ))}
+                {services.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration} min - €{s.price})</option>)}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.date')} *</label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={e => handleFormChange('date', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <input type="date" value={form.date} onChange={e => handleFormChange('date', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             {availableSlots.length > 0 && (
@@ -548,15 +562,12 @@ export default function BookingsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('bookings.time')} *</label>
                 <div className="grid grid-cols-4 gap-2">
                   {availableSlots.map(slot => (
-                    <button
-                      key={slot}
-                      onClick={() => handleFormChange('startTime', slot.slice(0, 5))}
+                    <button key={slot} onClick={() => handleFormChange('startTime', slot.slice(0, 5))}
                       className={`py-2 rounded-lg text-sm font-medium transition ${
                         form.startTime === slot.slice(0, 5)
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
+                      }`}>
                       {slot.slice(0, 5)}
                     </button>
                   ))}
@@ -571,11 +582,8 @@ export default function BookingsPage() {
             {editingBooking && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.status')}</label>
-                <select
-                  value={form.status}
-                  onChange={e => handleFormChange('status', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                <select value={form.status} onChange={e => handleFormChange('status', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                   {['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'].map(s => (
                     <option key={s} value={s}>{t(`bookings.statuses.${s}`)}</option>
                   ))}
@@ -585,39 +593,26 @@ export default function BookingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('bookings.notes')}</label>
-              <textarea
-                value={form.notes}
-                onChange={e => handleFormChange('notes', e.target.value)}
-                rows={2}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={t('bookings.notesPlaceholder')}
-              />
+              <textarea value={form.notes} onChange={e => handleFormChange('notes', e.target.value)} rows={2}
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('bookings.notesPlaceholder')} />
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setShowForm(false)}
-                className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-              >
+              <button onClick={() => setShowForm(false)}
+                className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 {t('common.cancel')}
               </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-800 transition disabled:opacity-50"
-              >
+              <button onClick={handleSave} disabled={saving}
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50">
                 {saving ? t('common.loading') : t('common.save')}
               </button>
             </div>
 
             {editingBooking && (
               <button
-                onClick={(e) => {
-                  handleDelete(editingBooking.id, e)
-                  setShowForm(false)
-                }}
-                className="w-full py-2 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium transition"
-              >
+                onClick={(e) => { handleDelete(editingBooking.id, e); setShowForm(false) }}
+                className="w-full py-2 text-red-500 dark:text-red-400 hover:text-red-700 text-sm font-medium transition">
                 {t('common.delete')}
               </button>
             )}
