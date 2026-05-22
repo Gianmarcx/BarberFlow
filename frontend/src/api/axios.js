@@ -1,7 +1,11 @@
 import axios from 'axios'
 
+// ✅ Usa la variabile d'ambiente dal file .env
 const api = axios.create({
-  baseURL: 'http://localhost:8081'
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081',
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
 
 // Aggiunge il token JWT ad ogni request

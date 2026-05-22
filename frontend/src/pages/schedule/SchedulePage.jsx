@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
-import toast from 'react-hot-toast' // ✅ 1. Importa toast
+import toast from 'react-hot-toast'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const DAYS = [
   'MONDAY', 'TUESDAY', 'WEDNESDAY',
@@ -16,6 +17,7 @@ const DEFAULT_CLOSE_SATURDAY = '19:00'
 
 export default function SchedulePage() {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
 
   const [schedules, setSchedules] = useState([])
   const [loading, setLoading] = useState(true)
@@ -75,12 +77,11 @@ export default function SchedulePage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.dayOfWeek || !form.openTime || !form.closeTime) {
       const msg = t('schedule.requiredFields')
       setError(msg)
-      toast.error(msg) // ✅ Feedback visivo validazione
+      toast.error(msg)
       return
     }
 
@@ -91,17 +92,16 @@ export default function SchedulePage() {
         closeTime: form.closeTime + ':00'
       })
       
-      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
+      toast.success(t('common.saveSuccess'))
       setShowForm(false)
       loadSchedules()
     } catch (err) {
       const msg = err.response?.data?.message || t('errors.serverError')
       setError(msg)
-      toast.error(msg) // ✅ Notifica errore
+      toast.error(msg)
     }
   }
 
-  // ✅ 3. setupWorkingDays aggiornato con Toast (sostituisce alert)
   const setupWorkingDays = async () => {
     if (!window.confirm(t('schedule.setupWorkingDaysConfirm', {
       weekdayOpen: DEFAULT_OPEN,
@@ -119,7 +119,7 @@ export default function SchedulePage() {
       const daysToCreate = WORKING_DAYS.filter(day => !configuredDays.includes(day))
 
       if (daysToCreate.length === 0) {
-        toast.info(t('schedule.alreadyConfigured')) // ✅ Info toast invece di alert
+        toast.info(t('schedule.alreadyConfigured'))
         return
       }
 
@@ -134,27 +134,26 @@ export default function SchedulePage() {
       })
 
       await Promise.all(promises)
-      toast.success(t('schedule.configuredSuccess', { count: daysToCreate.length })) // ✅ Success toast
+      toast.success(t('schedule.configuredSuccess', { count: daysToCreate.length }))
       loadSchedules()
     } catch (err) {
       const msg = err.response?.data?.message || t('errors.serverError')
       setError(msg)
-      toast.error(msg) // ✅ Error toast
+      toast.error(msg)
       console.error(err)
     } finally {
       setBulkLoading(false)
     }
   }
 
-  // ✅ 4. handleDelete aggiornato con Toast
   const handleDelete = async (dayOfWeek) => {
     if (!window.confirm(t('schedule.deleteConfirm'))) return
     try {
       await api.delete(`/api/schedules/${dayOfWeek}`)
-      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
+      toast.success(t('common.deleteSuccess'))
       loadSchedules()
     } catch (err) {
-      toast.error(t('common.deleteError')) // ✅ Notifica errore
+      toast.error(t('common.deleteError'))
       console.error(err)
     }
   }
@@ -165,9 +164,9 @@ export default function SchedulePage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className={`flex items-center ${isMobile ? 'justify-between' : 'justify-between'} gap-2 flex-wrap`}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-800 dark:text-white`}>
             {t('schedule.title')}
           </h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
@@ -184,7 +183,7 @@ export default function SchedulePage() {
               bulkLoading
                 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                 : 'bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800'
-            }`}
+            } ${isMobile ? 'px-3 py-1.5 text-xs' : ''}`}
           >
             {bulkLoading ? (
               <>
@@ -192,10 +191,10 @@ export default function SchedulePage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
-                {t('schedule.configuring')}
+                {!isMobile && t('schedule.configuring')}
               </>
             ) : (
-              <>⚡ {t('schedule.setupWorkingDays')}</>
+              <>{isMobile ? '⚡' : `⚡ ${t('schedule.setupWorkingDays')}`}</>
             )}
           </button>
 
@@ -203,12 +202,16 @@ export default function SchedulePage() {
           {availableDays.length > 0 && (
             <button
               onClick={openNew}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50"
+              className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50 ${
+                isMobile ? 'px-3 py-1.5 text-xs' : ''
+              }`}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              {t('schedule.addDay')}
+              {!isMobile && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              )}
+              {isMobile ? '+' : t('schedule.addDay')}
             </button>
           )}
         </div>
@@ -218,7 +221,7 @@ export default function SchedulePage() {
       {loading ? (
         <p className="text-gray-400 dark:text-gray-500 animate-pulse">{t('common.loading')}</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'}`}>
           {DAYS.map(day => {
             const schedule = schedules.find(s => s.dayOfWeek === day)
             const isConfigured = !!schedule
@@ -227,23 +230,23 @@ export default function SchedulePage() {
             return (
               <div
                 key={day}
-                className={`rounded-2xl border p-5 transition-colors duration-200 ${
+                className={`rounded-2xl border p-4 md:p-5 transition-colors duration-200 touch-pan-y ${
                   isConfigured
                     ? 'bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/50 border-gray-100 dark:border-gray-700 hover:shadow-md dark:hover:shadow-lg'
                     : 'bg-gray-50 dark:bg-gray-700/50 border-dashed border-gray-200 dark:border-gray-600'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white truncate">
                     {t(`schedule.days.${day}`)}
                   </h2>
 
                   {isConfigured ? (
-                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium">
+                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium flex-shrink-0">
                       {t('schedule.open')}
                     </span>
                   ) : (
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ${
                       isWorkingDay 
                         ? day === 'SATURDAY'
                           ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
@@ -265,7 +268,7 @@ export default function SchedulePage() {
                       🕐 {schedule.openTime?.slice(0, 5)} → {schedule.closeTime?.slice(0, 5)}
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 mt-4">
+                    <div className="flex items-center justify-end gap-2 md:gap-3 mt-4">
                       <button
                         onClick={() => openEdit(schedule)}
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
@@ -304,13 +307,19 @@ export default function SchedulePage() {
       {/* Modal */}
       {showForm && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4"
           onClick={() => setShowForm(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-700/50 w-full max-w-md p-6 space-y-4 transition-colors duration-200"
+            className={`bg-white dark:bg-gray-800 w-full md:max-w-md p-6 space-y-4 overflow-y-auto transition-colors duration-200 ${
+              isMobile ? 'rounded-t-3xl max-h-[90vh]' : 'rounded-2xl shadow-2xl max-h-[90vh]'
+            }`}
             onClick={e => e.stopPropagation()}
           >
+            {isMobile && (
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto -mt-2 mb-2" />
+            )}
+
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">
               {editingSchedule ? t('common.edit') : t('schedule.configure')} — {t(`schedule.days.${form.dayOfWeek}`)}
             </h2>

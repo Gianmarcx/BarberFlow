@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import api from '../../api/axios'
-import toast from 'react-hot-toast' 
+import toast from 'react-hot-toast'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const emptyForm = {
   name: '',
@@ -12,6 +13,7 @@ const emptyForm = {
 
 export default function BarberPage() {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
 
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -71,12 +73,11 @@ export default function BarberPage() {
     }))
   }
 
-  // ✅ 2. handleSave aggiornato con Toast
   const handleSave = async () => {
     if (!form.name.trim()) {
       const msg = t('barbers.nameRequired')
       setError(msg)
-      toast.error(msg) // ✅ Feedback visivo validazione
+      toast.error(msg)
       return
     }
 
@@ -94,28 +95,27 @@ export default function BarberPage() {
         await api.post('/api/barbers', payload)
       }
 
-      toast.success(t('common.saveSuccess')) // ✅ Notifica successo
+      toast.success(t('common.saveSuccess'))
       setShowForm(false)
       setForm(emptyForm)
       loadBarbers()
     } catch (err) {
       const msg = err.response?.data?.message || t('errors.serverError')
       setError(msg)
-      toast.error(msg) // ✅ Notifica errore
+      toast.error(msg)
       console.error('Errore salvataggio barbiere:', err)
     }
   }
 
-  // ✅ 3. handleDelete aggiornato con Toast
   const handleDelete = async (id) => {
     if (!window.confirm(t('barbers.deleteConfirm'))) return
 
     try {
       await api.delete(`/api/barbers/${id}`)
-      toast.success(t('common.deleteSuccess')) // ✅ Notifica eliminazione
+      toast.success(t('common.deleteSuccess'))
       loadBarbers()
     } catch (err) {
-      toast.error(t('common.deleteError')) // ✅ Notifica errore
+      toast.error(t('common.deleteError'))
       console.error(err)
     }
   }
@@ -123,9 +123,9 @@ export default function BarberPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className={`flex items-center ${isMobile ? 'justify-between' : 'justify-between'} gap-2 flex-wrap`}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-800 dark:text-white`}>
             {t('barbers.title')}
           </h1>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
@@ -136,9 +136,16 @@ export default function BarberPage() {
         <button
           type="button"
           onClick={openNew}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50"
+          className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50 ${
+            isMobile ? 'px-3 py-1.5 text-xs' : ''
+          }`}
         >
-          {t('barbers.new')}
+          {!isMobile && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          )}
+          {isMobile ? '+' : t('barbers.new')}
         </button>
       </div>
 
@@ -146,22 +153,22 @@ export default function BarberPage() {
       {loading ? (
         <p className="text-gray-400 dark:text-gray-500 animate-pulse">{t('common.loading')}</p>
       ) : barbers.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 p-12 text-center transition-colors duration-200">
-          <p className="text-5xl mb-4">✂️</p>
-          <p className="text-gray-400 dark:text-gray-500">{t('barbers.empty')}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-gray-700/50 p-8 md:p-12 text-center transition-colors duration-200">
+          <p className="text-4xl md:text-5xl mb-4">✂️</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm">{t('barbers.empty')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'}`}>
           {barbers.map(barber => (
             <div
               key={barber.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md dark:hover:shadow-lg transition-colors duration-200"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 md:p-5 hover:shadow-md dark:hover:shadow-lg transition-colors duration-200 touch-pan-y"
             >
               <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{barber.name}</h2>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white truncate">{barber.name}</h2>
                   {barber.specialization && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1 truncate">
                       🎯 {barber.specialization}
                     </p>
                   )}
@@ -170,23 +177,23 @@ export default function BarberPage() {
 
               <div className="mt-3 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                 {barber.email && (
-                  <p className="flex items-center gap-2">
-                    <span>📧</span> <span className="text-gray-700 dark:text-gray-200">{barber.email}</span>
+                  <p className="flex items-center gap-2 truncate">
+                    <span>📧</span> <a href={`mailto:${barber.email}`} className="text-gray-700 dark:text-gray-200 hover:underline truncate">{barber.email}</a>
                   </p>
                 )}
                 {barber.phone && (
-                  <p className="flex items-center gap-2">
-                    <span>📱</span> <span className="text-gray-700 dark:text-gray-200">{barber.phone}</span>
+                  <p className="flex items-center gap-2 truncate">
+                    <span>📱</span> <a href={`tel:${barber.phone}`} className="text-gray-700 dark:text-gray-200 hover:underline truncate">{barber.phone}</a>
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-between mt-4 md:mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="text-xs text-gray-400 dark:text-gray-500">
                   ID #{barber.id}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <button
                     type="button"
                     onClick={() => openEdit(barber)}
@@ -211,13 +218,19 @@ export default function BarberPage() {
       {/* Modal */}
       {showForm && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4"
           onClick={() => setShowForm(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-700/50 w-full max-w-md p-6 space-y-4 transition-colors duration-200"
+            className={`bg-white dark:bg-gray-800 w-full md:max-w-md p-6 space-y-4 overflow-y-auto transition-colors duration-200 ${
+              isMobile ? 'rounded-t-3xl max-h-[90vh]' : 'rounded-2xl shadow-2xl max-h-[90vh]'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
+            {isMobile && (
+              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto -mt-2 mb-2" />
+            )}
+
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">
               {editingBarber ? t('barbers.editTitle') : t('barbers.newTitle')}
             </h2>
