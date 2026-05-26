@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @Table(name = "users")
 @Getter
 @Setter
-public class User implements UserDetails {   // ✅ implementa UserDetails
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,15 +29,25 @@ public class User implements UserDetails {   // ✅ implementa UserDetails
     @Column(nullable = false)
     private String password;
 
-    private String name;      // ✅ aggiunto
-
-    private String surname;   // ✅ aggiunto
+    private String name;
+    private String surname;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 
+    
+    private String whatsappPhoneNumberId;
+
+    @Column(length = 500)
+    private String whatsappAccessToken;
+
+    private boolean whatsappRemindersEnabled = false;
+
+    private LocalDateTime whatsappConfiguredAt;
+
+    
     public User() {}
 
     public User(String email, String password) {
@@ -44,8 +55,7 @@ public class User implements UserDetails {   // ✅ implementa UserDetails
         this.password = password;
     }
 
-    // ✅ Metodi obbligatori di UserDetails
-
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -55,7 +65,7 @@ public class User implements UserDetails {   // ✅ implementa UserDetails
 
     @Override
     public String getUsername() {
-        return email;   // ✅ Spring Security usa email come username
+        return email;
     }
 
     @Override

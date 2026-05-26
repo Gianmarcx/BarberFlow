@@ -40,6 +40,9 @@ public class BookingService {
     private final BarberRepository barberRepository;
     private final ScheduleRepository scheduleRepository;
     private final ServiceRepository serviceRepository;
+    
+    // ✅ Nuova dipendenza: WhatsAppService per notifiche multi-tenant
+    private final WhatsAppService whatsappService;
 
     public BookingService(BookingRepository bookingRepository,
                           BookingMapper bookingMapper,
@@ -47,7 +50,8 @@ public class BookingService {
                           UserRepository userRepository,
                           BarberRepository barberRepository,
                           ScheduleRepository scheduleRepository,
-                          ServiceRepository serviceRepository) {
+                          ServiceRepository serviceRepository,
+                          WhatsAppService whatsappService) { // ✅ Aggiungi questo parametro
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.customerRepository = customerRepository;
@@ -55,18 +59,17 @@ public class BookingService {
         this.barberRepository = barberRepository;
         this.scheduleRepository = scheduleRepository;
         this.serviceRepository = serviceRepository;
+        this.whatsappService = whatsappService; // ✅ Inizializza il servizio
     }
 
     public BookingDTO createBooking(BookingDTO dto, String shopEmail) {
 
-        // ✅ Recupera lo shop (ORA VIENE USATO per i controlli di autorizzazione)
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
         Barber barber = barberRepository.findById(dto.getBarberId())
                 .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
 
-        // ✅ Confronta per ID invece che per email (più sicuro e elimina warning)
         if (!barber.getShop().getId().equals(shop.getId())) {
             throw new IllegalStateException("Non autorizzato");
         }
@@ -74,7 +77,6 @@ public class BookingService {
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalStateException("Cliente non trovato"));
 
-        // ✅ Confronta per ID invece che per email
         if (!customer.getOwner().getId().equals(shop.getId())) {
             throw new IllegalStateException("Non autorizzato");
         }
@@ -103,12 +105,24 @@ public class BookingService {
         booking.setPriceSnapshot(service.getPrice());
         booking.setNotes(dto.getNotes());
 
-        return bookingMapper.toDTO(bookingRepository.save(booking));
+        // ✅ Salva la prenotazione nel DB
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // ✅ ✅ ✅ INVIO WHATSAPP (Async, non bloccante) ✅ ✅ ✅
+        // Usa lo shopEmail per recuperare le credenziali WhatsApp specifiche del negozio
+        if (customer.getPhone() != null && !customer.getPhone().isEmpty()) {
+            whatsappService.sendBookingConfirmation(shopEmail, savedBooking)
+                .subscribe(
+                    result -> logger.info("✅ WhatsApp confirmation sent to {}: {}", customer.getPhone(), result),
+                    error -> logger.error("❌ Failed to send WhatsApp to {}: {}", customer.getPhone(), error.getMessage())
+                );
+        }
+
+        return bookingMapper.toDTO(savedBooking);
     }
 
     public List<BookingDTO> getBookings(String shopEmail) {
 
-        // ✅ Qui shop viene già usato correttamente in findByShop(shop)
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -123,14 +137,12 @@ public class BookingService {
 
     public BookingDTO updateBooking(Long id, BookingDTO dto, String shopEmail) {
 
-        // ✅ Recupera lo shop (ORA VIENE USATO per i controlli di autorizzazione)
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
-        // ✅ Confronta per ID invece che per email
         if (!booking.getBarber().getShop().getId().equals(shop.getId())) {
             throw new IllegalStateException("Non autorizzato");
         }
@@ -140,7 +152,7 @@ public class BookingService {
         if (dto.getBarberId() != null && !dto.getBarberId().equals(barber.getId())) {
             barber = barberRepository.findById(dto.getBarberId())
                     .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
-            // ✅ Confronta per ID invece che per email
+            
             if (!barber.getShop().getId().equals(shop.getId())) {
                 throw new IllegalStateException("Non autorizzato");
             }
@@ -179,7 +191,6 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
-        // ✅ Per delete, recuperiamo shop per sicurezza anche se non strettamente necessario
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -195,7 +206,6 @@ public class BookingService {
         Barber barber = barberRepository.findById(barberId)
                 .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
 
-        // ✅ Recuperiamo shop per controllo autorizzazione
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -260,23 +270,19 @@ public class BookingService {
         }
     } 
 
-    
     public DashboardStatsDTO getTodayStats(String shopEmail) {
         try {
             LocalDate today = LocalDate.now();
             
-            
             User shop = userRepository.findByEmail(shopEmail)
                     .orElseThrow(() -> new IllegalStateException("Utente non trovato: " + shopEmail));
 
-            
             List<Barber> barbers = barberRepository.findByShop(shop);
             if (barbers.isEmpty()) {
                 logger.debug("Nessun barbiere trovato per lo shop: {}", shopEmail);
                 return new DashboardStatsDTO(0, 0, 0, 0, 0.0, "EUR");
             }
 
-            // Recupera tutte le prenotazioni di oggi per tutti i barbieri
             List<Booking> todayBookings = barbers.stream()
                     .flatMap(barber -> {
                         List<Booking> bookings = bookingRepository.findByBarberAndDate(barber, today);
@@ -289,7 +295,6 @@ public class BookingService {
                 return new DashboardStatsDTO(0, 0, 0, 0, 0.0, "EUR");
             }
 
-            // Conta per status (con null-safety)
             long confirmed = todayBookings.stream()
                     .filter(b -> b != null && b.getStatus() != null)
                     .filter(b -> "CONFIRMED".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus()))
@@ -303,7 +308,6 @@ public class BookingService {
                     .filter(b -> b != null && "CANCELLED".equals(b.getStatus()))
                     .count();
 
-            // 💰 Calcola incasso totale (con null-safety per BigDecimal)
             double totalRevenue = todayBookings.stream()
                     .filter(b -> b != null && b.getStatus() != null)
                     .filter(b -> "CONFIRMED".equals(b.getStatus()) || "COMPLETED".equals(b.getStatus()))
@@ -327,15 +331,13 @@ public class BookingService {
                     confirmed,
                     pending,
                     cancelled,
-                    Math.round(totalRevenue * 100.0) / 100.0, // Arrotonda a 2 decimali
+                    Math.round(totalRevenue * 100.0) / 100.0,
                     "EUR"
             );
             
         } catch (Exception e) {
-            // ✅ Logging dettagliato per debug
             logger.error("❌ Errore in getTodayStats per shop {}: {}", shopEmail, e.getMessage(), e);
-            // Ritorna dati vuoti invece di far crashare l'endpoint
             return new DashboardStatsDTO(0, 0, 0, 0, 0.0, "EUR");
         }
-    } // ✅ Chiusura metodo getTodayStats
-} // ✅ Chiusura classe BookingService
+    }
+}

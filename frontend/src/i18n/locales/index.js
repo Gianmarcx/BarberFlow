@@ -6,6 +6,7 @@ import en from './en.json'
 import it from './it.json'
 import es from './es.json'
 import fr from './fr.json'
+import de from './de.json'
 
 i18n
   .use(LanguageDetector)
@@ -15,7 +16,8 @@ i18n
       en: { translation: en },
       it: { translation: it },
       es: { translation: es },
-      fr: { translation: fr }
+      fr: { translation: fr },
+      de: {translation: de}
     },
     fallbackLng: 'en',
     // ✅ RIMOSSO: lng: 'en' (che bloccava il rilevamento automatico)

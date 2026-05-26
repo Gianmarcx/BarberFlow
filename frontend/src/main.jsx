@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Toaster } from 'react-hot-toast' // ✅ Aggiungi questo import
+import { Toaster } from 'react-hot-toast'
 import './index.css'
 import './i18n/locales'
 import { ThemeProvider } from './context/ThemeContext'
