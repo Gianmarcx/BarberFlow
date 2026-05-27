@@ -52,6 +52,7 @@
     "selectBarber": "Seleccionar barbero",
     "barber": "Barbero",
     "noSlotsAvailable": "No hay slots disponibles para esta fecha",
+    "whatsappReminder": "Recibir recordatorios por WhatsApp 📱",
     "statuses": {
       "PENDING": "Pendiente",
       "CONFIRMED": "Confirmada",
@@ -86,9 +87,12 @@
     "bookingHistory": "Historial de Reservas",
     "phoneExists": "Cliente con este teléfono ya existe",
     "searchPlaceholder": "Buscar por nombre, apellido, teléfono...",
-    "searchResults": "Encontrados {{count}} de {{total}} clientes",
+    "searchResults": "{{count}} de {{total}} clientes encontrados",
     "searchNoResults": "No se encontraron clientes para esta búsqueda",
-    "clearSearch": "Limpiar búsqueda"
+    "clearSearch": "Limpiar búsqueda",
+    "page": "Página {{current}} de {{total}}",
+    "of": "de",
+    "whatsappReminder": "Recibir recordatorios por WhatsApp 📱"
   },
   "services": {
     "title": "Servicios",
@@ -131,7 +135,10 @@
     "specialization": "Especialización",
     "specializationPlaceholder": "ej. Fade, Barba, Colores",
     "nameRequired": "El nombre es obligatorio",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar este barbero?"
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este barbero?",
+    "searchResults": "{{count}} de {{total}} barberos encontrados",
+    "page": "Página {{current}} de {{total}}",
+    "of": "de"
   },
   "schedule": {
     "title": "Horario de trabajo",
@@ -178,6 +185,11 @@
     "serverError": "Error del servidor, inténtalo de nuevo",
     "unauthorized": "Sesión expirada, inicia sesión de nuevo"
   },
+  "whatsapp": {
+    "defaultConfirmation": "Estimado {name}, su cita está confirmada para el {date} a las {time}. ¡Le esperamos! ✂️",
+    "reminder24h": "Hola {name}, le recordamos su cita de mañana a las {time} con {barber}. ¡Hasta pronto!",
+    "reminder1h": "Hola {name}, su cita es en 1 hora a las {time}. ¡Nos vemos pronto! ✂️"
+  },
   "common": {
     "loading": "Cargando...",
     "save": "Guardar",
@@ -188,7 +200,10 @@
     "saveSuccess": "Guardado con éxito",
     "deleteSuccess": "Eliminado con éxito",
     "saveError": "Error al guardar",
-    "deleteError": "Error al eliminar"
+    "deleteError": "Error al eliminar",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página"
   },
   "locale": "es-ES"
 }

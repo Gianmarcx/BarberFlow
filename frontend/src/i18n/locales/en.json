@@ -52,6 +52,7 @@
     "selectBarber": "Select barber",
     "barber": "Barber",
     "noSlotsAvailable": "No slots available for this date",
+    "whatsappReminder": "Receive WhatsApp reminders 📱",
     "statuses": {
       "PENDING": "Pending",
       "CONFIRMED": "Confirmed",
@@ -86,9 +87,12 @@
     "bookingHistory": "Booking History",
     "phoneExists": "Customer with this phone already exists",
     "searchPlaceholder": "Search by name, surname, phone...",
-    "searchResults": "Found {{count}} of {{total}} customers",
+    "searchResults": "{{count}} of {{total}} customers found",
     "searchNoResults": "No customers found for this search",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "page": "Page {{current}} of {{total}}",
+    "of": "of",
+    "whatsappReminder": "Receive WhatsApp reminders 📱"
   },
   "services": {
     "title": "Services",
@@ -131,7 +135,10 @@
     "specialization": "Specialization",
     "specializationPlaceholder": "e.g. Fade, Beard, Colors",
     "nameRequired": "Name is required",
-    "deleteConfirm": "Are you sure you want to delete this barber?"
+    "deleteConfirm": "Are you sure you want to delete this barber?",
+    "searchResults": "{{count}} of {{total}} barbers found",
+    "page": "Page {{current}} of {{total}}",
+    "of": "of"
   },
   "schedule": {
     "title": "Work Schedule",
@@ -178,8 +185,13 @@
     "serverError": "Server error, please try again",
     "unauthorized": "Session expired, please login again"
   },
+  "whatsapp": {
+    "defaultConfirmation": "Dear {name}, your appointment is confirmed for {date} at {time}. We look forward to seeing you! ✂️",
+    "reminder24h": "Hi {name}, just a reminder: your appointment tomorrow at {time} with {barber}. See you soon!",
+    "reminder1h": "Hi {name}, your appointment is in 1 hour at {time}. See you soon! ✂️"
+  },
   "common": {
-     "loading": "Loading...",
+    "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -188,7 +200,10 @@
     "saveSuccess": "Saved successfully",
     "deleteSuccess": "Deleted successfully",
     "saveError": "Error saving",
-    "deleteError": "Error deleting"
+    "deleteError": "Error deleting",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "locale": "en-GB"
 }

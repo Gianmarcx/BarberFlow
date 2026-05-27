@@ -44,7 +44,7 @@ function getHeight(startTime, endTime) {
 }
 
 export default function BookingsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()  // ✅ Aggiunto i18n
   const isMobile = useIsMobile()
 
   const [hoveredBooking, setHoveredBooking] = useState(null)
@@ -63,7 +63,9 @@ export default function BookingsPage() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const scrollRef = useRef(null)
+  const [whatsappReminders, setWhatsappReminders] = useState(true)
 
+  // ✅ RIMOSSO customMessage dallo stato
   const [form, setForm] = useState({
     customerName: '', customerSurname: '', customerPhone: '',
     customerId: null, barberId: '', serviceId: '',
@@ -193,19 +195,44 @@ export default function BookingsPage() {
         })
         customerId = customerRes.data.id
       }
+
+      // ✅ Costruisci messaggio strutturato tradotto automaticamente
+      const formattedDate = new Date(form.date).toLocaleDateString(i18n.language, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      })
+      const formattedTime = form.startTime
+
+      const whatsappMessage = t('whatsapp.defaultConfirmation', {
+        name: form.customerName,
+        date: formattedDate,
+        time: formattedTime
+      })
+
       const payload = {
         customerId,
         barberId: parseInt(form.barberId),
         serviceId: parseInt(form.serviceId),
         startTime: `${form.date}T${form.startTime}:00`,
         status: form.status,
-        notes: form.notes
+        notes: form.notes,
+        whatsappMessage  // ✅ Invia il messaggio strutturato
       }
+
       if (editingBooking) {
         await api.put(`/api/bookings/${editingBooking.id}`, payload)
       } else {
         await api.post('/api/bookings', payload)
       }
+
+      // ✅ Invia WhatsApp se abilitato
+      if (whatsappReminders && form.customerPhone) {
+        api.post('/api/bookings/whatsapp', {
+          customerId,
+          phone: form.customerPhone,
+          message: whatsappMessage
+        }).catch(err => console.warn('WhatsApp send failed:', err))
+      }
+
       toast.success(t('common.saveSuccess'))
       setShowForm(false)
       loadAll()
@@ -598,6 +625,24 @@ export default function BookingsPage() {
                 placeholder={t('bookings.notesPlaceholder')} />
             </div>
 
+            {/* Toggle WhatsApp Reminder */}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={whatsappReminders} 
+                  onChange={(e) => setWhatsappReminders(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-600"></div>
+              </label>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {t('bookings.whatsappReminder')} 📱
+              </span>
+            </div>
+
+            {/* ✅ RIMOSSO: textarea customMessage */}
+
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowForm(false)}
                 className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
@@ -608,37 +653,6 @@ export default function BookingsPage() {
                 {saving ? t('common.loading') : t('common.save')}
               </button>
             </div>
-
-              {/* Toggle WhatsApp Reminder per questo cliente */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={whatsappReminders} 
-                  onChange={(e) => setWhatsappReminders(e.target.checked)}
-                  className="sr-only peer"
-                />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-600"></div>
-            </label>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t('bookings.whatsappReminder')} 📱
-              </span>
-              </div>
-
-
-              {/* Messaggio personalizzato per il cliente */}
-            <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Messaggio per il cliente (opzionale)
-            </label>
-              <textarea
-                rows={2}
-                value={form.customMessage}
-                 onChange={(e) => handleFormChange('customMessage', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Aggiungi una nota personale che verrà inviata su WhatsApp..."
-                 />
-              </div>
 
             {editingBooking && (
               <button

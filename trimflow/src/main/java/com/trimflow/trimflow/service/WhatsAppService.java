@@ -115,7 +115,7 @@ public class WhatsAppService {
         );
     }
 
-    private Mono<String> sendWhatsAppMessage(User shop, String to, String text) {
+    public Mono<String> sendWhatsAppMessage(User shop, String to, String text) {
         String formattedPhone = to.startsWith("+") ? to.substring(1) : to;
         if (!formattedPhone.startsWith("39") && formattedPhone.length() == 10) {
             formattedPhone = "39" + formattedPhone;

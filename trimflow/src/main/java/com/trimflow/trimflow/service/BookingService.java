@@ -26,7 +26,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import reactor.core.publisher.Mono;
 
 @Service
 public class BookingService {
@@ -40,8 +43,6 @@ public class BookingService {
     private final BarberRepository barberRepository;
     private final ScheduleRepository scheduleRepository;
     private final ServiceRepository serviceRepository;
-    
-    // ✅ Nuova dipendenza: WhatsAppService per notifiche multi-tenant
     private final WhatsAppService whatsappService;
 
     public BookingService(BookingRepository bookingRepository,
@@ -51,7 +52,7 @@ public class BookingService {
                           BarberRepository barberRepository,
                           ScheduleRepository scheduleRepository,
                           ServiceRepository serviceRepository,
-                          WhatsAppService whatsappService) { // ✅ Aggiungi questo parametro
+                          WhatsAppService whatsappService) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.customerRepository = customerRepository;
@@ -59,11 +60,10 @@ public class BookingService {
         this.barberRepository = barberRepository;
         this.scheduleRepository = scheduleRepository;
         this.serviceRepository = serviceRepository;
-        this.whatsappService = whatsappService; // ✅ Inizializza il servizio
+        this.whatsappService = whatsappService;
     }
 
     public BookingDTO createBooking(BookingDTO dto, String shopEmail) {
-
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -105,15 +105,13 @@ public class BookingService {
         booking.setPriceSnapshot(service.getPrice());
         booking.setNotes(dto.getNotes());
 
-       
         Booking savedBooking = bookingRepository.save(booking);
 
-        
-        if (customer.getPhone() != null && !customer.getPhone().isEmpty()) {
-            whatsappService.sendBookingConfirmation(shopEmail, savedBooking, dto.getCustomMessage())
+        if (customer.getPhone() != null && !customer.getPhone().isEmpty() && dto.getWhatsappMessage() != null) {
+            whatsappService.sendWhatsAppMessage(shop, customer.getPhone(), dto.getWhatsappMessage())
                 .subscribe(
-                    result -> logger.info("✅ WhatsApp confirmation sent to {}: {}", customer.getPhone(), result),
-                    error -> logger.error("❌ Failed to send WhatsApp to {}: {}", customer.getPhone(), error.getMessage())
+                    result -> logger.info("WhatsApp sent to {}: {}", customer.getPhone(), result),
+                    error -> logger.error("WhatsApp failed for {}: {}", customer.getPhone(), error.getMessage())
                 );
         }
 
@@ -121,7 +119,6 @@ public class BookingService {
     }
 
     public List<BookingDTO> getBookings(String shopEmail) {
-
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -135,7 +132,6 @@ public class BookingService {
     }
 
     public BookingDTO updateBooking(Long id, BookingDTO dto, String shopEmail) {
-
         User shop = userRepository.findByEmail(shopEmail)
                 .orElseThrow(() -> new IllegalStateException("Utente non trovato"));
 
@@ -157,8 +153,9 @@ public class BookingService {
             }
         }
 
-        ServiceEntity service = serviceRepository.findById(dto.getServiceId())
-                .orElseThrow(() -> new IllegalStateException("Servizio non trovato"));
+        ServiceEntity service = (dto.getServiceId() != null) 
+            ? serviceRepository.findById(dto.getServiceId()).orElseThrow(() -> new IllegalStateException("Servizio non trovato"))
+            : booking.getService();
 
         LocalDateTime start = dto.getStartTime();
         LocalDateTime end = start.plusMinutes(service.getDuration());
@@ -186,7 +183,6 @@ public class BookingService {
     }
 
     public void deleteBooking(Long id, String shopEmail) {
-
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Prenotazione non trovata"));
 
@@ -201,7 +197,6 @@ public class BookingService {
     }
 
     public List<LocalTime> getAvailableSlots(LocalDate date, Long serviceId, Long barberId, String shopEmail) {
-
         Barber barber = barberRepository.findById(barberId)
                 .orElseThrow(() -> new IllegalStateException("Barbiere non trovato"));
 
@@ -225,9 +220,12 @@ public class BookingService {
         LocalTime open = schedule.getOpenTime();
         LocalTime close = schedule.getCloseTime();
 
-        List<Booking> bookings = bookingRepository.findByBarberAndDate(barber, date)
+        LocalDateTime dayStart = date.atStartOfDay();
+        LocalDateTime dayEnd = date.plusDays(1).atStartOfDay();
+
+        List<Booking> bookings = bookingRepository.findByStartTimeBetweenAndStatus(dayStart, dayEnd, "CONFIRMED")
                 .stream()
-                .filter(b -> !b.getStatus().equals("CANCELLED"))
+                .filter(b -> !"CANCELLED".equals(b.getStatus()))
                 .collect(Collectors.toList());
 
         List<LocalTime> slots = new ArrayList<>();
@@ -253,7 +251,6 @@ public class BookingService {
     }
 
     private void validateSchedule(Barber barber, LocalDateTime start, LocalDateTime end) {
-
         DayOfWeek day = start.getDayOfWeek();
 
         Schedule schedule = scheduleRepository
@@ -264,10 +261,10 @@ public class BookingService {
         LocalTime bookingEnd = end.toLocalTime();
 
         if (bookingStart.isBefore(schedule.getOpenTime()) ||
-            bookingEnd.isAfter(schedule.getCloseTime())) {
+            !bookingEnd.isBefore(schedule.getCloseTime())) {
             throw new IllegalStateException("Prenotazione fuori orario lavorativo");
         }
-    } 
+    }
 
     public DashboardStatsDTO getTodayStats(String shopEmail) {
         try {
@@ -282,12 +279,12 @@ public class BookingService {
                 return new DashboardStatsDTO(0, 0, 0, 0, 0.0, "EUR");
             }
 
-            List<Booking> todayBookings = barbers.stream()
-                    .flatMap(barber -> {
-                        List<Booking> bookings = bookingRepository.findByBarberAndDate(barber, today);
-                        return bookings != null ? bookings.stream() : java.util.stream.Stream.empty();
-                    })
-                    .collect(java.util.stream.Collectors.toList());
+            LocalDateTime startOfDay = today.atStartOfDay();
+            LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+            List<Booking> todayBookings = bookingRepository.findByStartTimeBetweenAndStatus(startOfDay, endOfDay, "CONFIRMED")
+                    .stream()
+                    .collect(Collectors.toList());
 
             if (todayBookings.isEmpty()) {
                 logger.debug("Nessuna prenotazione trovata per oggi: {}", today);
@@ -322,7 +319,7 @@ public class BookingService {
                     })
                     .sum();
 
-            logger.info("✅ Stats calcolate per shop {}: {} prenotazioni, €{} incasso", 
+            logger.info("Stats calcolate per shop {}: {} prenotazioni, {} incasso", 
                 shopEmail, todayBookings.size(), totalRevenue);
             
             return new DashboardStatsDTO(
@@ -335,8 +332,28 @@ public class BookingService {
             );
             
         } catch (Exception e) {
-            logger.error("❌ Errore in getTodayStats per shop {}: {}", shopEmail, e.getMessage(), e);
+            logger.error("Errore in getTodayStats per shop {}: {}", shopEmail, e.getMessage(), e);
             return new DashboardStatsDTO(0, 0, 0, 0, 0.0, "EUR");
         }
+    }
+
+    public Mono<String> sendWhatsAppWithMessage(String shopEmail, Long customerId, String phone, String message) {
+        Optional<Customer> customerOpt = customerRepository.findById(customerId);
+        Optional<User> shopOpt = userRepository.findByEmail(shopEmail);
+
+        if (customerOpt.isEmpty() || shopOpt.isEmpty()) {
+            return Mono.just("Shop o cliente non trovato");
+        }
+
+        Customer customer = customerOpt.get();
+        User shop = shopOpt.get();
+
+        if (!shop.isWhatsappRemindersEnabled()) {
+            return Mono.just("WhatsApp non configurato per questo shop");
+        }
+
+        return whatsappService.sendWhatsAppMessage(shop, phone, message)
+            .doOnSuccess(r -> logger.info("WhatsApp custom message: {}", r))
+            .doOnError(e -> logger.error("WhatsApp custom message error: {}", e.getMessage()));
     }
 }

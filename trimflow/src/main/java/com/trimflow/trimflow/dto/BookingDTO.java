@@ -15,5 +15,5 @@ public class BookingDTO {
     private String status;
     private BigDecimal priceSnapshot;
     private String notes;
-    private String customMessage;
+     private String whatsappMessage;
 }

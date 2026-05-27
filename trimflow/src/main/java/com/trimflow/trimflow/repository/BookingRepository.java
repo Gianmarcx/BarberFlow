@@ -37,9 +37,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                               @Param("endTime") LocalDateTime endTime,
                                               @Param("excludeId") Long excludeId);
 
-    @Query("SELECT b FROM Booking b WHERE b.barber = :barber AND DATE(b.startTime) = :date")
-    List<Booking> findByBarberAndDate(@Param("barber") Barber barber,
-                                      @Param("date") LocalDate date);
+       @Query("SELECT b FROM Booking b WHERE b.barber = :barber AND b.startTime >= :start AND b.startTime < :end")
+       List<Booking> findByBarberAndDate(@Param("barber") Barber barber,
+                                                                 @Param("start") LocalDateTime start,
+                                                                 @Param("end") LocalDateTime end);
 
     List<Booking> findByStartTimeBetweenAndStatus(LocalDateTime startTime, LocalDateTime endTime, String status);
 }

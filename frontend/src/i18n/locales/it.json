@@ -52,6 +52,7 @@
     "selectBarber": "Seleziona barbiere",
     "barber": "Barbiere",
     "noSlotsAvailable": "Nessuno slot disponibile per questa data",
+    "whatsappReminder": "Ricevi promemoria su WhatsApp 📱",
     "statuses": {
       "PENDING": "In attesa",
       "CONFIRMED": "Confermata",
@@ -85,10 +86,13 @@
     "customerNotes": "Note Cliente",
     "bookingHistory": "Storico Prenotazioni",
     "phoneExists": "Cliente con questo telefono già esistente",
-     "searchPlaceholder": "Cerca per nome, cognome, telefono...",
-    "searchResults": "Trovati {{count}} su {{total}} clienti",
+    "searchPlaceholder": "Cerca per nome, cognome, telefono...",
+    "searchResults": "{{count}} di {{total}} clienti trovati",
     "searchNoResults": "Nessun cliente trovato per questa ricerca",
-    "clearSearch": "Cancella ricerca"
+    "clearSearch": "Cancella ricerca",
+    "page": "Pagina {{current}} di {{total}}",
+    "of": "di",
+    "whatsappReminder": "Ricevi promemoria su WhatsApp 📱"
   },
   "services": {
     "title": "Servizi",
@@ -131,7 +135,10 @@
     "specialization": "Specializzazione",
     "specializationPlaceholder": "es. Fade, Barba, Colori",
     "nameRequired": "Il nome è obbligatorio",
-    "deleteConfirm": "Vuoi eliminare questo barbiere?"
+    "deleteConfirm": "Vuoi eliminare questo barbiere?",
+    "searchResults": "{{count}} di {{total}} barbieri trovati",
+    "page": "Pagina {{current}} di {{total}}",
+    "of": "di"
   },
   "schedule": {
     "title": "Orari di lavoro",
@@ -178,6 +185,11 @@
     "serverError": "Errore del server, riprova",
     "unauthorized": "Sessione scaduta, effettua il login"
   },
+  "whatsapp": {
+    "defaultConfirmation": "Gentile {name}, è confermato il tuo appuntamento per il {date} alle {time}. Ti aspettiamo! ✂️",
+    "reminder24h": "Ciao {name}, ti ricordiamo l'appuntamento di domani alle {time} da {barber}. A presto!",
+    "reminder1h": "Ciao {name}, il tuo appuntamento è tra 1 ora alle {time}. Ci vediamo presto! ✂️"
+  },
   "common": {
     "loading": "Caricamento...",
     "save": "Salva",
@@ -188,7 +200,10 @@
     "saveSuccess": "Salvato con successo",
     "deleteSuccess": "Eliminato con successo",
     "saveError": "Errore durante il salvataggio",
-    "deleteError": "Errore durante l'eliminazione"
+    "deleteError": "Errore durante l'eliminazione",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "page": "Pagina"
   },
   "locale": "it-IT"
 }

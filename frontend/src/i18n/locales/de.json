@@ -52,6 +52,7 @@
     "selectBarber": "Friseur auswählen",
     "barber": "Friseur",
     "noSlotsAvailable": "Keine verfügbaren Slots für dieses Datum",
+    "whatsappReminder": "WhatsApp-Erinnerungen erhalten 📱",
     "statuses": {
       "PENDING": "Ausstehend",
       "CONFIRMED": "Bestätigt",
@@ -88,7 +89,10 @@
     "searchPlaceholder": "Nach Name, Nachname, Telefon suchen...",
     "searchResults": "{{count}} von {{total}} Kunden gefunden",
     "searchNoResults": "Keine Kunden für diese Suche gefunden",
-    "clearSearch": "Suche löschen"
+    "clearSearch": "Suche löschen",
+    "page": "Seite {{current}} von {{total}}",
+    "of": "von",
+    "whatsappReminder": "WhatsApp-Erinnerungen erhalten 📱"
   },
   "services": {
     "title": "Dienstleistungen",
@@ -131,7 +135,10 @@
     "specialization": "Spezialisierung",
     "specializationPlaceholder": "z.B. Fade, Bart, Farben",
     "nameRequired": "Name ist erforderlich",
-    "deleteConfirm": "Möchten Sie diesen Friseur wirklich löschen?"
+    "deleteConfirm": "Möchten Sie diesen Friseur wirklich löschen?",
+    "searchResults": "{{count}} von {{total}} Friseuren gefunden",
+    "page": "Seite {{current}} von {{total}}",
+    "of": "von"
   },
   "schedule": {
     "title": "Arbeitszeiten",
@@ -178,6 +185,11 @@
     "serverError": "Serverfehler, bitte versuchen Sie es erneut",
     "unauthorized": "Sitzung abgelaufen, bitte melden Sie sich erneut an"
   },
+  "whatsapp": {
+    "defaultConfirmation": "Sehr geehrte/r {name}, Ihr Termin ist bestätigt für {date} um {time}. Wir freuen uns auf Sie! ✂️",
+    "reminder24h": "Hallo {name}, Erinnerung: Ihr Termin morgen um {time} bei {barber}. Bis bald!",
+    "reminder1h": "Hallo {name}, Ihr Termin ist in 1 Stunde um {time}. Bis gleich! ✂️"
+  },
   "common": {
     "loading": "Laden...",
     "save": "Speichern",
@@ -185,7 +197,13 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "confirm": "Bestätigen",
-    "switchLanguage": "Sprache wechseln"
+    "saveSuccess": "Erfolgreich gespeichert",
+    "deleteSuccess": "Erfolgreich gelöscht",
+    "saveError": "Fehler beim Speichern",
+    "deleteError": "Fehler beim Löschen",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "page": "Seite"
   },
   "locale": "de-DE"
 }

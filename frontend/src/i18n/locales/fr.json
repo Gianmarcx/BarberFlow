@@ -52,6 +52,7 @@
     "selectBarber": "Sélectionner un barbier",
     "barber": "Barbier",
     "noSlotsAvailable": "Aucun créneau disponible pour cette date",
+    "whatsappReminder": "Recevoir des rappels WhatsApp 📱",
     "statuses": {
       "PENDING": "En attente",
       "CONFIRMED": "Confirmée",
@@ -88,7 +89,10 @@
     "searchPlaceholder": "Rechercher par nom, prénom, téléphone...",
     "searchResults": "{{count}} clients trouvés sur {{total}}",
     "searchNoResults": "Aucun client trouvé pour cette recherche",
-    "clearSearch": "Effacer la recherche"
+    "clearSearch": "Effacer la recherche",
+    "page": "Page {{current}} sur {{total}}",
+    "of": "sur",
+    "whatsappReminder": "Recevoir des rappels WhatsApp 📱"
   },
   "services": {
     "title": "Services",
@@ -131,7 +135,10 @@
     "specialization": "Spécialisation",
     "specializationPlaceholder": "ex. Fade, Barbe, Couleurs",
     "nameRequired": "Le nom est obligatoire",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce barbier ?"
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce barbier ?",
+    "searchResults": "{{count}} barbiers trouvés sur {{total}}",
+    "page": "Page {{current}} sur {{total}}",
+    "of": "sur"
   },
   "schedule": {
     "title": "Horaires de travail",
@@ -178,6 +185,11 @@
     "serverError": "Erreur serveur, veuillez réessayer",
     "unauthorized": "Session expirée, veuillez vous reconnecter"
   },
+  "whatsapp": {
+    "defaultConfirmation": "Cher {name}, votre rendez-vous est confirmé pour le {date} à {time}. Nous avons hâte de vous voir! ✂️",
+    "reminder24h": "Bonjour {name}, rappel: votre rendez-vous demain à {time} avec {barber}. À bientôt!",
+    "reminder1h": "Bonjour {name}, votre rendez-vous est dans 1 heure à {time}. À très vite! ✂️"
+  },
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
@@ -188,7 +200,10 @@
     "saveSuccess": "Enregistré avec succès",
     "deleteSuccess": "Supprimé avec succès",
     "saveError": "Erreur lors de l'enregistrement",
-    "deleteError": "Erreur lors de la suppression"
+    "deleteError": "Erreur lors de la suppression",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page"
   },
   "locale": "fr-FR"
 }

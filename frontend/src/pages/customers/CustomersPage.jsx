@@ -4,6 +4,9 @@ import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
+// ✅ COSTANTE PAGINAZIONE
+const ITEMS_PER_PAGE = 10
+
 export default function CustomersPage() {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
@@ -25,6 +28,14 @@ export default function CustomersPage() {
   })
 
   const [error, setError] = useState('')
+
+  // ✅ STATE PAGINAZIONE
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // ✅ Reset pagina quando cambia la ricerca
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   useEffect(() => {
     loadAll()
@@ -155,26 +166,27 @@ export default function CustomersPage() {
     })
   }
 
+  // ✅ FILTRO CLIENTI (versione semplificata per paginazione)
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers
-    
     const query = searchQuery.toLowerCase().trim()
-    
     return customers.filter(customer => {
       const name = (customer.name || '').toLowerCase()
       const surname = (customer.surname || '').toLowerCase()
       const phone = (customer.phone || '').toLowerCase()
-      const email = (customer.email || '').toLowerCase()
-      
-      return (
-        name.includes(query) ||
-        surname.includes(query) ||
-        phone.includes(query) ||
-        email.includes(query) ||
-        `${name} ${surname}`.includes(query)
-      )
+      return name.includes(query) || surname.includes(query) ||
+             phone.includes(query) || `${name} ${surname}`.includes(query)
     })
   }, [customers, searchQuery])
+
+  // ✅ CALCOLO PAGINE TOTALI
+  const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE)
+
+  // ✅ CLIENTI PAGINATI
+  const paginatedCustomers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredCustomers.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredCustomers, currentPage])
 
   return (
     <div className="space-y-4">
@@ -271,131 +283,169 @@ export default function CustomersPage() {
           )}
         </div>
       ) : (
-        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-2'}`}>
-          {filteredCustomers.map(customer => {
-            const customerBookings = getCustomerBookings(customer.id)
-            const lastBooking = getLastBooking(customer.id)
+        <>
+          {/* ✅ Grid con clienti paginati */}
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-2'}`}>
+            {paginatedCustomers.map(customer => {
+              const customerBookings = getCustomerBookings(customer.id)
+              const lastBooking = getLastBooking(customer.id)
 
-            const highlightMatch = (text, query) => {
-              if (!query || !text) return text
-              const regex = new RegExp(`(${query})`, 'gi')
-              return text.split(regex).map((part, i) => 
-                regex.test(part) ? (
-                  <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">
-                    {part}
-                  </mark>
-                ) : part
-              )
-            }
+              const highlightMatch = (text, query) => {
+                if (!query || !text) return text
+                const regex = new RegExp(`(${query})`, 'gi')
+                return text.split(regex).map((part, i) => 
+                  regex.test(part) ? (
+                    <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">
+                      {part}
+                    </mark>
+                  ) : part
+                )
+              }
 
-            return (
-              <div
-                key={customer.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 md:p-5 hover:shadow-md dark:hover:shadow-lg transition-colors duration-200 touch-pan-y"
-              >
-                {/* Header card */}
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white truncate">
-                      {searchQuery 
-                        ? highlightMatch(`${customer.name} ${customer.surname}`, searchQuery)
-                        : `${customer.name} ${customer.surname}`
-                      }
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                      📞 <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone || t('customers.noPhone')}</a>
-                    </p>
-                    {customer.email && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                        ✉️ <a href={`mailto:${customer.email}`} className="hover:underline">{customer.email}</a>
+              return (
+                <div
+                  key={customer.id}
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 md:p-5 hover:shadow-md dark:hover:shadow-lg transition-colors duration-200 touch-pan-y"
+                >
+                  {/* Header card */}
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-bold text-gray-800 dark:text-white truncate">
+                        {searchQuery 
+                          ? highlightMatch(`${customer.name} ${customer.surname}`, searchQuery)
+                          : `${customer.name} ${customer.surname}`
+                        }
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
+                        📞 <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone || t('customers.noPhone')}</a>
                       </p>
-                    )}
-                  </div>
+                      {customer.email && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                          ✉️ <a href={`mailto:${customer.email}`} className="hover:underline">{customer.email}</a>
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="flex items-center gap-2 md:gap-3 ml-2">
-                    <button
-                      onClick={() => openEdit(customer)}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
-                    >
-                      {t('common.edit')}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(customer.id)}
-                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
-                    >
-                      {t('common.delete')}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 md:p-4 transition-colors duration-200">
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
-                      {t('customers.totalBookings')}
-                    </p>
-                    <p className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
-                      {customerBookings.length}
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 md:p-4 transition-colors duration-200">
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
-                      {t('customers.lastBooking')}
-                    </p>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      {lastBooking ? formatDate(lastBooking.startTime) : '-'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {customer.notes && (
-                  <div className="mt-4 p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl transition-colors duration-200">
-                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-1">
-                      {t('customers.customerNotes')}
-                    </p>
-                    <p className="text-sm text-blue-800 dark:text-blue-300">{customer.notes}</p>
-                  </div>
-                )}
-
-                {/* Storico prenotazioni */}
-                {customerBookings.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-                      {t('customers.bookingHistory')}
-                    </p>
-                    <div className="space-y-2 max-h-40 md:max-h-48 overflow-y-auto pr-1">
-                      {customerBookings
-                        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-                        .map(booking => (
-                          <div
-                            key={booking.id}
-                            className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 transition-colors duration-200"
-                          >
-                            <div>
-                              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                {formatDate(booking.startTime)}
-                              </p>
-                              <p className="text-xs text-gray-400 dark:text-gray-500">
-                                {t(`bookings.statuses.${booking.status}`)}
-                              </p>
-                            </div>
-                            <div className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium">
-                              #{booking.id}
-                            </div>
-                          </div>
-                        ))}
+                    <div className="flex items-center gap-2 md:gap-3 ml-2">
+                      <button
+                        onClick={() => openEdit(customer)}
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                      >
+                        {t('common.edit')}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(customer.id)}
+                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                      >
+                        {t('common.delete')}
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+
+                  {/* Stats */}
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 md:p-4 transition-colors duration-200">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                        {t('customers.totalBookings')}
+                      </p>
+                      <p className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+                        {customerBookings.length}
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 md:p-4 transition-colors duration-200">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                        {t('customers.lastBooking')}
+                      </p>
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        {lastBooking ? formatDate(lastBooking.startTime) : '-'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  {customer.notes && (
+                    <div className="mt-4 p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl transition-colors duration-200">
+                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-1">
+                        {t('customers.customerNotes')}
+                      </p>
+                      <p className="text-sm text-blue-800 dark:text-blue-300">{customer.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Storico prenotazioni */}
+                  {customerBookings.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+                        {t('customers.bookingHistory')}
+                      </p>
+                      <div className="space-y-2 max-h-40 md:max-h-48 overflow-y-auto pr-1">
+                        {customerBookings
+                          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+                          .map(booking => (
+                            <div
+                              key={booking.id}
+                              className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-xl px-3 py-2 transition-colors duration-200"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                  {formatDate(booking.startTime)}
+                                </p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">
+                                  {t(`bookings.statuses.${booking.status}`)}
+                                </p>
+                              </div>
+                              <div className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium">
+                                #{booking.id}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ✅ PAGINAZIONE */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
+              >
+                ←
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
+              >
+                →
+              </button>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Modal */}
+      {/* Modal (inalterato) */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
           <div className={`bg-white dark:bg-gray-800 w-full md:max-w-md p-6 space-y-4 overflow-y-auto transition-colors duration-200 ${

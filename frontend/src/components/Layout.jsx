@@ -165,103 +165,103 @@ export default function Layout() {
     )
   }
 
-// ─── DESKTOP LAYOUT ──────────────────────────────────────────
-return (
-  <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+  // ─── DESKTOP LAYOUT ──────────────────────────────────────────
+  return (
+    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
 
-{/* Sidebar */}
-<aside className="w-64 text-white flex flex-col bg-gradient-to-br from-[#0a2a43] via-[#133c5a] to-[#b92b27] shadow-2xl transition-colors duration-200">
+      {/* ✅ Sidebar: sticky + h-screen per renderla fissa */}
+      <aside className="w-64 text-white flex flex-col bg-gradient-to-br from-[#0a2a43] via-[#133c5a] to-[#b92b27] shadow-2xl sticky top-0 h-screen transition-colors duration-200">
 
-  {/* Logo */}
-  <div className="p-6 border-b border-white/10 backdrop-blur-sm">
-    <div className="flex items-center justify-center gap-3 select-none">
-      <img
-        src="/logo.png"
-        alt="TrimFlow logo"
-        className="h-15 w-10 object-contain drop-shadow-md transition-transform duration-300 hover:scale-105"
-      />
-      <div className="flex flex-col leading-none">
-        <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">
-          TrimFlow
-        </h1>
-        <span className="text-[11px] uppercase tracking-[0.25em] text-white/60 mt-1">
-          Management
-        </span>
-      </div>
-    </div>
-  </div>
+        {/* Logo */}
+        <div className="p-6 border-b border-white/10 backdrop-blur-sm">
+          <div className="flex items-center justify-center gap-3 select-none">
+            <img
+              src="/logo.png"
+              alt="TrimFlow logo"
+              className="h-15 w-10 object-contain drop-shadow-md transition-transform duration-300 hover:scale-105"
+            />
+            <div className="flex flex-col leading-none">
+              <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">
+                TrimFlow
+              </h1>
+              <span className="text-[11px] uppercase tracking-[0.25em] text-white/60 mt-1">
+                Management
+              </span>
+            </div>
+          </div>
+        </div>
 
-  {/* ✅ Language Switcher */}
-  <div className="px-5 py-5 border-b border-white/10">
-    <LanguageSwitcher variant="default" />
-  </div>
+        {/* ✅ Language Switcher */}
+        <div className="px-5 py-5 border-b border-white/10">
+          <LanguageSwitcher variant="default" />
+        </div>
 
-  {/* Navigation */}
-  <nav className="flex-1 p-4 space-y-2">
-    {navItems.map(item => (
-      <NavLink
-        key={item.path}
-        to={item.path}
-        end={item.path === '/'}
-        className={({ isActive }) =>
-          `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-            isActive
-              ? 'bg-white/20 text-white shadow-lg backdrop-blur-md'
-              : 'text-white/80 hover:bg-white/10 hover:text-white hover:translate-x-1'
-          }`
-        }
-      >
-        {item.icon}
-        <span>{item.label}</span>
-      </NavLink>
-    ))}
-  </nav>
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {navItems.map(item => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-white/20 text-white shadow-lg backdrop-blur-md'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white hover:translate-x-1'
+                }`
+              }
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
 
-  {/* Toggle Dark Mode */}
-  <div className="p-4 border-t border-white/10">
-    <button
-      onClick={toggleTheme}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200"
-      title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
-    >
-      {darkMode ? (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-          />
-        </svg>
-      ) : (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-          />
-        </svg>
-      )}
-      {darkMode ? t('theme.lightMode') : t('theme.darkMode')}
-    </button>
-  </div>
+        {/* Toggle Dark Mode */}
+        <div className="p-4 border-t border-white/10">
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all duration-200"
+            title={darkMode ? t('theme.switchToLight') : t('theme.switchToDark')}
+          >
+            {darkMode ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                />
+              </svg>
+            )}
+            {darkMode ? t('theme.lightMode') : t('theme.darkMode')}
+          </button>
+        </div>
 
-  {/* Logout */}
-  <div className="p-4 border-t border-white/10">
-    <button
-      onClick={handleLogout}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-red-500 hover:text-white transition-all duration-200 hover:translate-x-1"
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-        />
-      </svg>
-      {t('nav.logout')}
-    </button>
-  </div>
+        {/* Logout */}
+        <div className="p-4 border-t border-white/10">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:bg-red-500 hover:text-white transition-all duration-200 hover:translate-x-1"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            {t('nav.logout')}
+          </button>
+        </div>
 
-</aside>
+      </aside>
 
-    {/* Main content */}
-    <main className="flex-1 p-8 overflow-auto bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
-      <Outlet />
-    </main>
+      {/* ✅ Main content: overflow-auto per scroll indipendente */}
+      <main className="flex-1 p-8 overflow-auto bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+        <Outlet />
+      </main>
 
     </div>
   )

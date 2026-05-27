@@ -28,13 +28,11 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleDTO>> getAll(
-            @RequestParam Long barberId,       // ✅ aggiunto
-            Authentication auth) {
-        return ResponseEntity.ok(scheduleService.getSchedules(barberId, auth.getName()));
+    public ResponseEntity<List<ScheduleDTO>> getAll(Authentication auth) {  // ✅ Rimosso barberId obbligatorio
+        return ResponseEntity.ok(scheduleService.getSchedulesByShop(auth.getName()));  // ✅ Nuovo metodo
     }
 
-    @DeleteMapping("/{barberId}/{dayOfWeek}")  // ✅ aggiunto barberId nel path
+    @DeleteMapping("/{barberId}/{dayOfWeek}")
     public ResponseEntity<Void> delete(
             @PathVariable Long barberId,
             @PathVariable DayOfWeek dayOfWeek,
