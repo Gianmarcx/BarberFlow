@@ -3,6 +3,7 @@ package com.trimflow.trimflow.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
@@ -21,6 +22,7 @@ public class EncryptionService {
 
     private final SecretKey secretKey;
 
+    @Autowired
     public EncryptionService(@Value("${encryption.secret-key}") String secretKeyString) {
         byte[] keyBytes = secretKeyString.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length != 32) {

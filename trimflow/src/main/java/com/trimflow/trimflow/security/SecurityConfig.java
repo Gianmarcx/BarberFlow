@@ -52,6 +52,8 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/api-docs/**"
                 ).permitAll()
+                // Rendiamo accessibili gli endpoint Actuator in sviluppo
+                .requestMatchers("/actuator/**").permitAll()
                 // Tutte le altre richieste richiedono autenticazione
                 .anyRequest().authenticated()
             )
