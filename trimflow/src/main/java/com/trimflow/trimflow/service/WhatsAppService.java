@@ -22,14 +22,12 @@ public class WhatsAppService {
 
     private final UserRepository userRepository;
     private final WebClient.Builder webClientBuilder;
+    private final EncryptionService encryptionService;
 
-    private static final DateTimeFormatter IT_DATE = 
-        DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.of("it"));
-    private static final DateTimeFormatter IT_TIME = 
-        DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter IT_DATE = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.of("it"));
+    private static final DateTimeFormatter IT_TIME = DateTimeFormatter.ofPattern("HH:mm");
 
-    
-    public Mono<String> sendBookingConfirmation(String shopEmail, Booking booking) {
+    public Mono<String> sendBookingConfirmation(String shopEmail, Booking booking, String customMessage) {
         return Mono.justOrEmpty(userRepository.findByEmail(shopEmail))
             .flatMap(shop -> {
                 if (!shop.isWhatsappRemindersEnabled() || 
@@ -37,7 +35,7 @@ public class WhatsAppService {
                     booking.getCustomer().getPhone() == null) {
                     return Mono.just("WhatsApp non configurato o disabilitato per questo shop");
                 }
-                String message = buildConfirmationMessage(booking);
+                String message = buildConfirmationMessage(booking, customMessage);
                 return sendWhatsAppMessage(shop, booking.getCustomer().getPhone(), message);
             })
             .switchIfEmpty(Mono.just("Shop non trovato: " + shopEmail))
@@ -45,7 +43,6 @@ public class WhatsAppService {
             .doOnError(e -> log.error("WhatsApp error: {}", e.getMessage()));
     }
 
-    
     public Mono<String> send24hReminder(String shopEmail, Booking booking) {
         return Mono.justOrEmpty(userRepository.findByEmail(shopEmail))
             .flatMap(shop -> {
@@ -59,7 +56,6 @@ public class WhatsAppService {
             });
     }
 
-    
     public Mono<String> send1hReminder(String shopEmail, Booking booking) {
         return Mono.justOrEmpty(userRepository.findByEmail(shopEmail))
             .flatMap(shop -> {
@@ -73,22 +69,25 @@ public class WhatsAppService {
             });
     }
 
-    
-    private String buildConfirmationMessage(Booking booking) {
-        return String.format(
+    private String buildConfirmationMessage(Booking booking, String customMessage) {
+        String base = String.format(
             "✅ *Prenotazione confermata*\\n\\n" +
             "Ciao %s 👋\\n\\n" +
             "📅 %s\\n" +
             "🕐 %s\\n" +
             "✂️ %s\\n" +
-            "👨‍🦱 %s\\n\\n" +
-            "Ti aspettiamo! ✂️✨",
+            "👨‍🦱 %s",
             booking.getCustomer().getName(),
             booking.getStartTime().format(IT_DATE),
             booking.getStartTime().format(IT_TIME),
             booking.getService().getName(),
             booking.getBarber().getName()
         );
+        
+        if (customMessage != null && !customMessage.isBlank()) {
+            return base + "\\n\\n" + "📝 *Nota dal barbiere:*\\n" + customMessage + "\\n\\n" + "Ti aspettiamo! ✂️✨";
+        }
+        return base + "\\n\\n" + "Ti aspettiamo! ✂️✨";
     }
 
     private String build24hReminderMessage(Booking booking) {
@@ -116,14 +115,19 @@ public class WhatsAppService {
         );
     }
 
-   
     private Mono<String> sendWhatsAppMessage(User shop, String to, String text) {
-        // Formato telefono: 393331234567 (senza +, con codice paese)
         String formattedPhone = to.startsWith("+") ? to.substring(1) : to;
         if (!formattedPhone.startsWith("39") && formattedPhone.length() == 10) {
             formattedPhone = "39" + formattedPhone;
         }
         final String targetPhone = formattedPhone;
+
+        String decryptedToken;
+        try {
+            decryptedToken = encryptionService.decrypt(shop.getWhatsappAccessToken());
+        } catch (Exception e) {
+            return Mono.just("Errore decrittografia token: " + e.getMessage());
+        }
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("messaging_product", "whatsapp");
@@ -136,7 +140,7 @@ public class WhatsAppService {
 
         WebClient webClient = webClientBuilder
             .baseUrl("https://graph.facebook.com/v18.0")
-            .defaultHeader("Authorization", "Bearer " + shop.getWhatsappAccessToken())
+            .defaultHeader("Authorization", "Bearer " + decryptedToken)
             .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .build();
 
@@ -157,7 +161,6 @@ public class WhatsAppService {
             });
     }
 
-    
     public Mono<String> testWhatsAppConfig(String shopEmail, String testPhone) {
         return Mono.justOrEmpty(userRepository.findByEmail(shopEmail))
             .flatMap(shop -> {

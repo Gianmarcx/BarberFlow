@@ -105,13 +105,12 @@ public class BookingService {
         booking.setPriceSnapshot(service.getPrice());
         booking.setNotes(dto.getNotes());
 
-        // ✅ Salva la prenotazione nel DB
+       
         Booking savedBooking = bookingRepository.save(booking);
 
-        // ✅ ✅ ✅ INVIO WHATSAPP (Async, non bloccante) ✅ ✅ ✅
-        // Usa lo shopEmail per recuperare le credenziali WhatsApp specifiche del negozio
+        
         if (customer.getPhone() != null && !customer.getPhone().isEmpty()) {
-            whatsappService.sendBookingConfirmation(shopEmail, savedBooking)
+            whatsappService.sendBookingConfirmation(shopEmail, savedBooking, dto.getCustomMessage())
                 .subscribe(
                     result -> logger.info("✅ WhatsApp confirmation sent to {}: {}", customer.getPhone(), result),
                     error -> logger.error("❌ Failed to send WhatsApp to {}: {}", customer.getPhone(), error.getMessage())

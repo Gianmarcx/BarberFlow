@@ -625,6 +625,21 @@ export default function BookingsPage() {
               </span>
               </div>
 
+
+              {/* Messaggio personalizzato per il cliente */}
+            <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Messaggio per il cliente (opzionale)
+            </label>
+              <textarea
+                rows={2}
+                value={form.customMessage}
+                 onChange={(e) => handleFormChange('customMessage', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Aggiungi una nota personale che verrà inviata su WhatsApp..."
+                 />
+              </div>
+
             {editingBooking && (
               <button
                 onClick={(e) => { handleDelete(editingBooking.id, e); setShowForm(false) }}

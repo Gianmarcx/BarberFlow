@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 public class BookingDTO {
     private Long id;
     private Long customerId;
-    private Long barberId;          // ✅ aggiunto
+    private Long barberId;         
     private Long serviceId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String status;
     private BigDecimal priceSnapshot;
     private String notes;
+    private String customMessage;
 }
