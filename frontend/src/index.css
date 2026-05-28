@@ -1,14 +1,66 @@
 @import "tailwindcss";
 
-
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Transizioni fluide */
-* {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+/* 🎯 Transizioni fluide SOLO su elementi interattivi e layout */
+html, body, button, a, input, select, textarea, 
+[class*="bg-white"], [class*="bg-gray"], [class*="rounded"], 
+[class*="shadow"], [role="button"], [tabindex="0"] {
+  transition: background-color 0.25s ease, color 0.25s ease, 
+              border-color 0.25s ease, transform 0.25s ease, 
+              box-shadow 0.25s ease, opacity 0.25s ease;
 }
 
-/* Escludi elementi che non dovrebbero animare */
-img, svg, canvas, path {
+/* 🚫 Escludi elementi statici/media */
+img, svg, canvas, path, video, icon, [class*="animate-"] {
   transition: none !important;
+}
+
+/* ✨ Animazione "Lift & Glow" per card premium */
+@keyframes card-lift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.hover-card-premium {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hover-card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12), 
+              0 8px 12px -4px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in oklch, currentColor 15%, transparent);
+}
+
+/* Dark mode adaptation */
+.dark .hover-card-premium:hover {
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.5), 
+              0 8px 12px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* ✨ Pulsante con effetto "sparkle" al hover */
+.hover-btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.4);
+}
+
+.hover-btn-premium::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.hover-btn-premium:hover::after {
+  transform: translateX(100%);
 }

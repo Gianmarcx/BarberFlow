@@ -110,7 +110,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Bookings */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow dark:shadow-gray-700/50 transition-colors duration-200">
+        <div className="
+  bg-white dark:bg-gray-800 
+  rounded-xl p-3 
+  shadow-sm dark:shadow-gray-700/50 
+  border border-gray-100 dark:border-gray-700
+  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+  cursor-default
+">
           <p className="text-xl font-bold text-gray-800 dark:text-white">
             {stats.totalBookingsToday}
           </p>
@@ -120,7 +127,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Confirmed */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow dark:shadow-gray-700/50 transition-colors duration-200">
+        <div className="
+  bg-white dark:bg-gray-800 
+  rounded-xl p-3 
+  shadow-sm dark:shadow-gray-700/50 
+  border border-gray-100 dark:border-gray-700
+  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+  cursor-default
+">
           <p className="text-xl font-bold text-green-600 dark:text-green-400">
             {stats.confirmedBookings}
           </p>
@@ -130,7 +144,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Pending */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow dark:shadow-gray-700/50 transition-colors duration-200">
+        <div className="
+  bg-white dark:bg-gray-800 
+  rounded-xl p-3 
+  shadow-sm dark:shadow-gray-700/50 
+  border border-gray-100 dark:border-gray-700
+  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+  cursor-default
+">
           <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
             {stats.pendingBookings}
           </p>
@@ -158,7 +179,15 @@ export default function DashboardPage() {
             {bookings.map(booking => (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer touch-pan-y"
+                className="
+  flex items-center justify-between 
+  p-3 md:p-4 
+  bg-gray-50 dark:bg-gray-700/50 
+  rounded-xl 
+  border border-transparent
+  hover-card-premium hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-blue-200 dark:hover:border-blue-800
+  cursor-pointer touch-pan-y
+"
                 onClick={() => navigate('/bookings')}
               >
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">

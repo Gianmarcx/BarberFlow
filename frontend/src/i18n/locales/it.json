@@ -16,7 +16,8 @@
     "loginButton": "Accedi",
     "registerButton": "Crea Account",
     "noAccount": "Non hai un account?",
-    "hasAccount": "Hai già un account?"
+    "hasAccount": "Hai già un account?",
+    "invalidCredentials": "Email o password errati"
   },
   "dashboard": {
     "title": "Appuntamenti di oggi",
@@ -203,7 +204,11 @@
     "deleteError": "Errore durante l'eliminazione",
     "previous": "Precedente",
     "next": "Successivo",
-    "page": "Pagina"
+    "page": "Pagina",
+    "pageNotFound": "Pagina non trovata",
+    "pageNotFoundMessage": "La pagina cercata non esiste.",
+    "goHome": "Vai alla dashboard",
+    "goBack": "Torna indietro"
   },
   "locale": "it-IT"
 }

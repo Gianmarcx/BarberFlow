@@ -16,7 +16,8 @@
     "loginButton": "Se connecter",
     "registerButton": "Créer un compte",
     "noAccount": "Pas encore de compte ?",
-    "hasAccount": "Déjà un compte ?"
+    "hasAccount": "Déjà un compte ?",
+    "invalidCredentials": "Email ou mot de passe incorrect"
   },
   "dashboard": {
     "title": "Rendez-vous du jour",
@@ -203,7 +204,11 @@
     "deleteError": "Erreur lors de la suppression",
     "previous": "Précédent",
     "next": "Suivant",
-    "page": "Page"
+    "page": "Page",
+    "pageNotFound": "Page non trouvée",
+    "pageNotFoundMessage": "La page demandée n'existe pas.",
+    "goHome": "Aller au tableau de bord",
+    "goBack": "Retourner"
   },
   "locale": "fr-FR"
 }

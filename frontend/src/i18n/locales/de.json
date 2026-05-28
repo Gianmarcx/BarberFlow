@@ -16,7 +16,8 @@
     "loginButton": "Anmelden",
     "registerButton": "Konto erstellen",
     "noAccount": "Noch kein Konto?",
-    "hasAccount": "Bereits ein Konto?"
+    "hasAccount": "Bereits ein Konto?",
+    "invalidCredentials": "E-Mail oder Passwort falsch"
   },
   "dashboard": {
     "title": "Heutige Termine",
@@ -203,7 +204,11 @@
     "deleteError": "Fehler beim Löschen",
     "previous": "Zurück",
     "next": "Weiter",
-    "page": "Seite"
+    "page": "Seite",
+    "pageNotFound": "Seite nicht gefunden",
+    "pageNotFoundMessage": "Die gesuchte Seite existiert nicht.",
+    "goHome": "Zur Übersicht",
+    "goBack": "Zurück"
   },
   "locale": "de-DE"
 }

@@ -337,7 +337,14 @@ export default function BookingsPage() {
           return (
             <div
               key={booking.id}
-              className={`absolute left-1 right-1 rounded-lg border-l-4 px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition ${colorClass}`}
+              className={`
+  absolute left-1 right-1 
+  rounded-lg border-l-4 px-2 py-1 
+  overflow-hidden cursor-pointer 
+  hover-card-premium hover:opacity-100 
+  hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20
+  ${colorClass}
+`}
               style={{ top: `${top}px`, height: `${Math.max(height, 32)}px` }}
               onClick={e => openEdit(booking, e)}
               onMouseEnter={(e) => { setHoveredBooking(booking); setHoverPos({ x: e.clientX, y: e.clientY }) }}
@@ -369,8 +376,15 @@ export default function BookingsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={goToToday}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-          >
+            className="
+  px-3 py-1.5 
+  border border-gray-300 dark:border-gray-600 
+  rounded-lg text-sm font-medium 
+  text-gray-700 dark:text-gray-200 
+  hover-btn-premium hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+  active:scale-[0.98]
+"          >
             {t('bookings.today')}
           </button>
           <div className="flex items-center gap-1">
@@ -411,8 +425,17 @@ export default function BookingsPage() {
           </select>
           <button
             onClick={() => openNew(currentDate.toISOString().split('T')[0], '')}
-            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium shadow"
-          >
+            className="
+  flex items-center gap-1 
+  px-3 py-1.5 
+  bg-blue-600 text-white 
+  rounded-lg font-medium 
+  shadow-md shadow-blue-500/20 
+  hover-btn-premium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30
+  active:scale-[0.98] active:shadow-md
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+  text-xs
+"          >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -649,7 +672,16 @@ export default function BookingsPage() {
                 {t('common.cancel')}
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50">
+                className="
+  flex-1 py-3 
+  bg-blue-600 text-white 
+  rounded-xl text-sm font-medium 
+  shadow-md shadow-blue-500/20 
+  hover-btn-premium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30
+  active:scale-[0.98] active:shadow-md
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:-translate-y-0
+">
                 {saving ? t('common.loading') : t('common.save')}
               </button>
             </div>

@@ -9,10 +9,11 @@ import ServicesPage from './pages/services/ServicesPage'
 import SchedulePage from './pages/schedule/SchedulePage'
 import BarberPage from './pages/barber/BarberPage'
 import Layout from './components/Layout'
+import PageNotFound from './pages/PageNotFound'
 
 function PrivateRoute({ children }) {
-  const { token } = useAuth()
-  return token ? children : <Navigate to="/login" />
+  const { isAuthenticated } = useAuth()
+  return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
@@ -30,12 +31,12 @@ function AppRoutes() {
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="services" element={<ServicesPage />} />
-        
-        
         <Route path="barbers" element={<BarberPage />} />
-        
         <Route path="schedule" element={<SchedulePage />} />
+        <Route path="*" element={<PageNotFound />} />
       </Route>
+
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   )
 }

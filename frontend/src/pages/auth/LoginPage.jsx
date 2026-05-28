@@ -25,7 +25,7 @@ export default function LoginPage() {
       navigate('/')
     } catch (err) {
       if (err.response?.status === 401) {
-        setError('Email o password errati')
+        setError(t('auth.invalidCredentials'))
       } else {
         setError(t('errors.serverError'))
       }

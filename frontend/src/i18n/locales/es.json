@@ -16,7 +16,8 @@
     "loginButton": "Entrar",
     "registerButton": "Crear cuenta",
     "noAccount": "¿No tienes cuenta?",
-    "hasAccount": "¿Ya tienes cuenta?"
+    "hasAccount": "¿Ya tienes cuenta?",
+    "invalidCredentials": "Correo o contraseña incorrectos"
   },
   "dashboard": {
     "title": "Citas de hoy",
@@ -203,7 +204,11 @@
     "deleteError": "Error al eliminar",
     "previous": "Anterior",
     "next": "Siguiente",
-    "page": "Página"
+    "page": "Página",
+    "pageNotFound": "Página no encontrada",
+    "pageNotFoundMessage": "La página que buscas no existe.",
+    "goHome": "Ir al panel",
+    "goBack": "Volver"
   },
   "locale": "es-ES"
 }

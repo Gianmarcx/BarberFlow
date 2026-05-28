@@ -111,9 +111,7 @@ export default function ServicesPage() {
       const msg = err.response?.data?.message || t('errors.serverError')
       setError(msg)
       toast.error(msg)
-      if (import.meta.env.DEV) {
-        console.error('ServicesPage save error:', err)
-      }
+      console.error('ServicesPage save error:', err)
     }
   }
 

@@ -16,7 +16,8 @@
     "loginButton": "Sign In",
     "registerButton": "Create Account",
     "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "invalidCredentials": "Email or password incorrect"
   },
   "dashboard": {
     "title": "Today's Appointments",
@@ -203,7 +204,11 @@
     "deleteError": "Error deleting",
     "previous": "Previous",
     "next": "Next",
-    "page": "Page"
+    "page": "Page",
+    "pageNotFound": "Page not found",
+    "pageNotFoundMessage": "The page you are looking for does not exist.",
+    "goHome": "Go to dashboard",
+    "goBack": "Go back"
   },
   "locale": "en-GB"
 }

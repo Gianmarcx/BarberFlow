@@ -32,7 +32,3 @@ i18n
   })
 
 export default i18n
-
-if (import.meta.env.DEV){
-  window.i18n = i18n
-}

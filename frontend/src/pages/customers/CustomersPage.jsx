@@ -4,7 +4,7 @@ import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
-// ✅ COSTANTE PAGINAZIONE
+
 const ITEMS_PER_PAGE = 10
 
 export default function CustomersPage() {
@@ -29,10 +29,10 @@ export default function CustomersPage() {
 
   const [error, setError] = useState('')
 
-  // ✅ STATE PAGINAZIONE
+
   const [currentPage, setCurrentPage] = useState(1)
 
-  // ✅ Reset pagina quando cambia la ricerca
+
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery])

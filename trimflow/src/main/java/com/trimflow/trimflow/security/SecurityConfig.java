@@ -1,5 +1,6 @@
 package com.trimflow.trimflow.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -26,6 +28,9 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+
+    @Value("${app.cors.allowed-origins:}")
+    private String corsAllowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
                           UserDetailsService userDetailsService,
@@ -46,14 +51,8 @@ public class SecurityConfig {
                 // Endpoint pubblici
                 .requestMatchers(
                     "/api/auth/login",
-                    "/api/auth/register",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/swagger-ui.html",
-                    "/api-docs/**"
+                    "/api/auth/register"
                 ).permitAll()
-                // Rendiamo accessibili gli endpoint Actuator in sviluppo
-                .requestMatchers("/actuator/**").permitAll()
                 // Tutte le altre richieste richiedono autenticazione
                 .anyRequest().authenticated()
             )
@@ -88,27 +87,20 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configurazione CORS per produzione e sviluppo.
-     * Per produzione: sostituire http://localhost:5173 con il dominio del frontend.
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        
-        // Origini consentite (usa variabile d'ambiente per produzione)
-        String frontendUrl = System.getenv("FRONTEND_URL");
-        if (frontendUrl != null && !frontendUrl.isEmpty()) {
-            config.setAllowedOrigins(List.of(frontendUrl));
-        } else {
-            // Default per sviluppo locale
-            config.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        List<String> allowedOrigins = List.of("http://localhost:5173", "http://127.0.0.1:5173");
+        if (corsAllowedOrigins != null && !corsAllowedOrigins.isBlank()) {
+            allowedOrigins = Arrays.stream(corsAllowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(origin -> !origin.isEmpty())
+                    .toList();
         }
-        
-        // Metodi HTTP consentiti
+
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        
-        // Headers consentiti (specifici, non wildcard "*")
         config.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type",
@@ -118,14 +110,8 @@ public class SecurityConfig {
             "Access-Control-Request-Method",
             "Access-Control-Request-Headers"
         ));
-        
-        // Headers esposti al frontend
         config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
-        
-        // Credenziali (necessarie per JWT)
         config.setAllowCredentials(true);
-        
-        // Cache preflight: 1 ora
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
