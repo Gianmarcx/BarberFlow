@@ -87,35 +87,46 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
 
-        List<String> allowedOrigins = List.of("http://localhost:5173", "http://127.0.0.1:5173");
-        if (corsAllowedOrigins != null && !corsAllowedOrigins.isBlank()) {
-            allowedOrigins = Arrays.stream(corsAllowedOrigins.split(","))
-                    .map(String::trim)
-                    .filter(origin -> !origin.isEmpty())
-                    .toList();
-        }
+    List<String> allowedOrigins = List.of();
+    
+    if (corsAllowedOrigins != null && !corsAllowedOrigins.isBlank()) {
+        // Produzione: usa origini esplicite dalla variabile d'ambiente
+        allowedOrigins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
+    } else {
+        // ✅ SVILUPPO: fallback con origini locali esplicite
+        allowedOrigins = List.of(
+            "http://localhost:5173",
+            "http://127.0.0.1:5173", 
+            "http://192.168.1.79:5173"  // Il tuo IP mobile
+        );
+    }
 
-        config.setAllowedOrigins(allowedOrigins);
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "Accept",
-            "X-Requested-With",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
-        config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
+    // ⚠️ Con allowCredentials=true, NON puoi usare "*" o wildcard
+    config.setAllowedOrigins(allowedOrigins);
+    
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+    config.setAllowedHeaders(List.of(
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "X-Requested-With",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers"
+    ));
+    config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
     }
 }
