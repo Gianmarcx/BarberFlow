@@ -81,11 +81,21 @@ export default function DashboardPage() {
         <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-800 dark:text-white`}>
           {t('dashboard.title')}
         </h1>
+        
+        {/* ✅ Bottone "Nuova Prenotazione" con hover effects premium */}
         <button
           onClick={() => navigate('/bookings')}
-          className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50 ${
-            isMobile ? 'px-3 py-1.5 text-xs' : ''
-          }`}
+          className={`
+            flex items-center gap-2 px-4 py-2 
+            bg-blue-600 text-white 
+            rounded-xl font-medium 
+            shadow-md shadow-blue-500/20 
+            hover-btn-premium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30
+            active:scale-[0.98] active:shadow-md
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+            ${isMobile ? 'px-3 py-1.5 text-xs' : 'text-sm'}
+            transition-all duration-200
+          `}
         >
           {!isMobile && (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +110,14 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-3">
         
         {/* 💰 INCASSO TOTALE */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow dark:shadow-gray-700/50 transition-colors duration-200 border-l-4 border-green-500">
+        <div className="
+          bg-white dark:bg-gray-800 
+          rounded-xl p-3 
+          shadow-sm dark:shadow-gray-700/50 
+          border border-gray-100 dark:border-gray-700
+          hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+          cursor-default
+        ">
           <p className="text-xl font-bold text-green-600 dark:text-green-400">
             {formatCurrency(stats.totalRevenueToday, stats.currency)}
           </p>
@@ -111,13 +128,13 @@ export default function DashboardPage() {
 
         {/* Total Bookings */}
         <div className="
-  bg-white dark:bg-gray-800 
-  rounded-xl p-3 
-  shadow-sm dark:shadow-gray-700/50 
-  border border-gray-100 dark:border-gray-700
-  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
-  cursor-default
-">
+          bg-white dark:bg-gray-800 
+          rounded-xl p-3 
+          shadow-sm dark:shadow-gray-700/50 
+          border border-gray-100 dark:border-gray-700
+          hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+          cursor-default
+        ">
           <p className="text-xl font-bold text-gray-800 dark:text-white">
             {stats.totalBookingsToday}
           </p>
@@ -128,13 +145,13 @@ export default function DashboardPage() {
 
         {/* Confirmed */}
         <div className="
-  bg-white dark:bg-gray-800 
-  rounded-xl p-3 
-  shadow-sm dark:shadow-gray-700/50 
-  border border-gray-100 dark:border-gray-700
-  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
-  cursor-default
-">
+          bg-white dark:bg-gray-800 
+          rounded-xl p-3 
+          shadow-sm dark:shadow-gray-700/50 
+          border border-gray-100 dark:border-gray-700
+          hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+          cursor-default
+        ">
           <p className="text-xl font-bold text-green-600 dark:text-green-400">
             {stats.confirmedBookings}
           </p>
@@ -145,13 +162,13 @@ export default function DashboardPage() {
 
         {/* Pending */}
         <div className="
-  bg-white dark:bg-gray-800 
-  rounded-xl p-3 
-  shadow-sm dark:shadow-gray-700/50 
-  border border-gray-100 dark:border-gray-700
-  hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
-  cursor-default
-">
+          bg-white dark:bg-gray-800 
+          rounded-xl p-3 
+          shadow-sm dark:shadow-gray-700/50 
+          border border-gray-100 dark:border-gray-700
+          hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+          cursor-default
+        ">
           <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
             {stats.pendingBookings}
           </p>
@@ -162,7 +179,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Lista prenotazioni */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow dark:shadow-gray-700/50 p-4 md:p-6 transition-colors duration-200">
+      <div className="
+        bg-white dark:bg-gray-800 
+        rounded-xl shadow-sm dark:shadow-gray-700/50 
+        border border-gray-100 dark:border-gray-700
+        p-4 md:p-6 
+        hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+        transition-all duration-200
+      ">
         <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
           {t('dashboard.title')}
         </h2>
@@ -180,14 +204,14 @@ export default function DashboardPage() {
               <div
                 key={booking.id}
                 className="
-  flex items-center justify-between 
-  p-3 md:p-4 
-  bg-gray-50 dark:bg-gray-700/50 
-  rounded-xl 
-  border border-transparent
-  hover-card-premium hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-blue-200 dark:hover:border-blue-800
-  cursor-pointer touch-pan-y
-"
+                  flex items-center justify-between 
+                  p-3 md:p-4 
+                  bg-gray-50 dark:bg-gray-700/50 
+                  rounded-xl 
+                  border border-transparent
+                  hover-card-premium hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-blue-200 dark:hover:border-blue-800
+                  cursor-pointer touch-pan-y
+                "
                 onClick={() => navigate('/bookings')}
               >
                 <div className="flex items-center gap-3 md:gap-4 min-w-0">

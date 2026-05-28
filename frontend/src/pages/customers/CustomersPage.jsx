@@ -4,7 +4,6 @@ import api from '../../api/axios'
 import toast from 'react-hot-toast'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
-
 const ITEMS_PER_PAGE = 10
 
 export default function CustomersPage() {
@@ -29,9 +28,7 @@ export default function CustomersPage() {
 
   const [error, setError] = useState('')
 
-
   const [currentPage, setCurrentPage] = useState(1)
-
 
   useEffect(() => {
     setCurrentPage(1)
@@ -166,7 +163,6 @@ export default function CustomersPage() {
     })
   }
 
-  // ✅ FILTRO CLIENTI (versione semplificata per paginazione)
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers
     const query = searchQuery.toLowerCase().trim()
@@ -179,10 +175,8 @@ export default function CustomersPage() {
     })
   }, [customers, searchQuery])
 
-  // ✅ CALCOLO PAGINE TOTALI
   const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE)
 
-  // ✅ CLIENTI PAGINATI
   const paginatedCustomers = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE
     return filteredCustomers.slice(start, start + ITEMS_PER_PAGE)
@@ -203,9 +197,17 @@ export default function CustomersPage() {
 
         <button
           onClick={openNew}
-          className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm font-medium shadow dark:shadow-gray-700/50 ${
-            isMobile ? 'px-3 py-1.5 text-xs' : ''
-          }`}
+          className={`
+            flex items-center gap-2 px-4 py-2 
+            bg-blue-600 text-white 
+            rounded-xl font-medium 
+            shadow-md shadow-blue-500/20 
+            hover-btn-premium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30
+            active:scale-[0.98] active:shadow-md
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+            ${isMobile ? 'px-3 py-1.5 text-xs' : 'text-sm'}
+            transition-all duration-200
+          `}
         >
           {!isMobile && (
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,7 +244,7 @@ export default function CustomersPage() {
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -276,7 +278,7 @@ export default function CustomersPage() {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm transition-colors"
             >
               {t('customers.clearSearch')}
             </button>
@@ -305,7 +307,14 @@ export default function CustomersPage() {
               return (
                 <div
                   key={customer.id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow-gray-700/50 border border-gray-100 dark:border-gray-700 p-4 md:p-5 hover:shadow-md dark:hover:shadow-lg transition-colors duration-200 touch-pan-y"
+                  className="
+                    bg-white dark:bg-gray-800 
+                    rounded-2xl shadow-sm dark:shadow-gray-700/50 
+                    border border-gray-100 dark:border-gray-700 
+                    p-4 md:p-5 
+                    hover-card-premium hover:border-blue-200 dark:hover:border-blue-800
+                    touch-pan-y
+                  "
                 >
                   {/* Header card */}
                   <div className="flex items-start justify-between">
@@ -317,11 +326,11 @@ export default function CustomersPage() {
                         }
                       </h2>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                        📞 <a href={`tel:${customer.phone}`} className="hover:underline">{customer.phone || t('customers.noPhone')}</a>
+                        📞 <a href={`tel:${customer.phone}`} className="hover:underline transition-colors">{customer.phone || t('customers.noPhone')}</a>
                       </p>
                       {customer.email && (
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                          ✉️ <a href={`mailto:${customer.email}`} className="hover:underline">{customer.email}</a>
+                          ✉️ <a href={`mailto:${customer.email}`} className="hover:underline transition-colors">{customer.email}</a>
                         </p>
                       )}
                     </div>
@@ -329,13 +338,13 @@ export default function CustomersPage() {
                     <div className="flex items-center gap-2 md:gap-3 ml-2">
                       <button
                         onClick={() => openEdit(customer)}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium hover-btn-premium transition-colors"
                       >
                         {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(customer.id)}
-                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium hover-btn-premium transition-colors"
                       >
                         {t('common.delete')}
                       </button>
@@ -414,7 +423,15 @@ export default function CustomersPage() {
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
+                className="
+                  px-3 py-1.5 
+                  border border-gray-200 dark:border-gray-700 
+                  rounded-lg text-sm font-medium 
+                  text-gray-600 dark:text-gray-300 
+                  hover-btn-premium hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500
+                  disabled:opacity-40 disabled:cursor-not-allowed
+                  transition-all duration-200
+                "
               >
                 ←
               </button>
@@ -423,11 +440,14 @@ export default function CustomersPage() {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
+                  className={`
+                    w-8 h-8 rounded-lg text-sm font-medium 
+                    transition-all duration-200 hover-btn-premium
+                    ${currentPage === page
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                    }
+                  `}
                 >
                   {page}
                 </button>
@@ -436,7 +456,15 @@ export default function CustomersPage() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition"
+                className="
+                  px-3 py-1.5 
+                  border border-gray-200 dark:border-gray-700 
+                  rounded-lg text-sm font-medium 
+                  text-gray-600 dark:text-gray-300 
+                  hover-btn-premium hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500
+                  disabled:opacity-40 disabled:cursor-not-allowed
+                  transition-all duration-200
+                "
               >
                 →
               </button>
@@ -445,7 +473,7 @@ export default function CustomersPage() {
         </>
       )}
 
-      {/* Modal (inalterato) */}
+      {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
           <div className={`bg-white dark:bg-gray-800 w-full md:max-w-md p-6 space-y-4 overflow-y-auto transition-colors duration-200 ${
@@ -528,13 +556,31 @@ export default function CustomersPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="
+                  flex-1 py-3 
+                  border border-gray-200 dark:border-gray-600 
+                  rounded-xl text-sm font-medium 
+                  text-gray-600 dark:text-gray-300 
+                  hover-btn-premium hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+                  active:scale-[0.98]
+                  transition-all duration-200
+                "
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-800 transition"
+                className="
+                  flex-1 py-3 
+                  bg-blue-600 text-white 
+                  rounded-xl text-sm font-medium 
+                  shadow-md shadow-blue-500/20 
+                  hover-btn-premium hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30
+                  active:scale-[0.98] active:shadow-md
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800
+                  transition-all duration-200
+                "
               >
                 {t('common.save')}
               </button>
