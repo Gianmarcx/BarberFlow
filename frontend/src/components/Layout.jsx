@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useIsMobile } from '../hooks/useIsMobile'
-import LanguageSwitcher from '../components/LanguageSwitcher'
+import LanguageSwitcher from './LanguageSwitcher'
+import NotificationBell from './NotificationBell'
 
 export default function Layout() {
   const { t } = useTranslation()
@@ -91,12 +92,10 @@ export default function Layout() {
             <span className="text-lg font-extrabold tracking-tight">TrimFlow</span>
           </div>
 
-          {/* ✅ Azioni header: Language + Theme + Logout allineati */}
+          {/* ✅ Azioni header: Language + Notifications + Theme + Logout */}
           <div className="flex items-center gap-1">
-            {/* Language Switcher Mobile */}
             <LanguageSwitcher variant="mobile" />
-            
-            {/* Toggle dark mode */}
+            <NotificationBell />
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-white/80 hover:bg-white/10 transition"
@@ -116,8 +115,6 @@ export default function Layout() {
                 </svg>
               )}
             </button>
-
-            {/* Logout */}
             <button
               onClick={handleLogout}
               className="p-2 rounded-lg text-white/80 hover:bg-red-500 transition"
@@ -191,9 +188,10 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* ✅ Language Switcher */}
-        <div className="px-5 py-5 border-b border-white/10">
+        {/* ✅ Language Switcher + Notification Bell*/}
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-2">
           <LanguageSwitcher variant="default" />
+          <NotificationBell />
         </div>
 
         {/* Navigation */}
@@ -217,7 +215,7 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Toggle Dark Mode */}
+        {/* Toggle Dark Mode (ora sotto la nav, da solo) */}
         <div className="p-4 border-t border-white/10">
           <button
             onClick={toggleTheme}

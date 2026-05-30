@@ -44,6 +44,7 @@ public class BookingService {
     private final ScheduleRepository scheduleRepository;
     private final ServiceRepository serviceRepository;
     private final WhatsAppService whatsappService;
+    private final NotificationService notificationService;  // ✅ AGGIUNTO
 
     public BookingService(BookingRepository bookingRepository,
                           BookingMapper bookingMapper,
@@ -52,7 +53,8 @@ public class BookingService {
                           BarberRepository barberRepository,
                           ScheduleRepository scheduleRepository,
                           ServiceRepository serviceRepository,
-                          WhatsAppService whatsappService) {
+                          WhatsAppService whatsappService,
+                          NotificationService notificationService) {  // ✅ AGGIUNTO
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.customerRepository = customerRepository;
@@ -61,6 +63,7 @@ public class BookingService {
         this.scheduleRepository = scheduleRepository;
         this.serviceRepository = serviceRepository;
         this.whatsappService = whatsappService;
+        this.notificationService = notificationService;  // ✅ AGGIUNTO
     }
 
     public BookingDTO createBooking(BookingDTO dto, String shopEmail) {
@@ -107,11 +110,21 @@ public class BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
+       
         if (customer.getPhone() != null && !customer.getPhone().isEmpty() && dto.getWhatsappMessage() != null) {
             whatsappService.sendWhatsAppMessage(shop, customer.getPhone(), dto.getWhatsappMessage())
                 .subscribe(
                     result -> logger.info("WhatsApp sent to {}: {}", customer.getPhone(), result),
-                    error -> logger.error("WhatsApp failed for {}: {}", customer.getPhone(), error.getMessage())
+                    error -> {
+                        logger.error("WhatsApp failed for {}: {}", customer.getPhone(), error.getMessage());
+                        
+                        notificationService.create(
+                            shop.getEmail(),
+                            "⚠️ WhatsApp Fallito",
+                            "Impossibile inviare conferma a " + customer.getPhone() + ". Contatta il cliente manualmente.",
+                            "WHATSAPP_FAILED"
+                        );
+                    }
                 );
         }
 
@@ -354,6 +367,15 @@ public class BookingService {
 
         return whatsappService.sendWhatsAppMessage(shop, phone, message)
             .doOnSuccess(r -> logger.info("WhatsApp custom message: {}", r))
-            .doOnError(e -> logger.error("WhatsApp custom message error: {}", e.getMessage()));
+            .doOnError(e -> {
+                logger.error("WhatsApp custom message error: {}", e.getMessage());
+              
+                notificationService.create(
+                    shop.getEmail(),
+                    "⚠️ WhatsApp Fallito",
+                    "Impossibile inviare messaggio a " + phone + ". Controlla le impostazioni API.",
+                    "WHATSAPP_FAILED"
+                );
+            });
     }
 }
